@@ -5,10 +5,9 @@
 #include "iterN_r.h"
 #include "mel.h"
 #include "mel_2.h"
-#include <new>
 #include "proj.h"
 
-int N_max = 4;								// Maximum number of iterations;
+int N_max = 3;								// Maximum number of iterations;
 static int **dimen_p_;							// Matrix: How many bases have in (Q,S)_{N-1} sector.  
 static int **dimen_;							// Matrix: How many bases have in (Q,S)_N sector.
 
