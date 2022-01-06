@@ -44,7 +44,7 @@ for(int q = 0; q < nq_past; q++){
 // Done! Bases are already ready to use.
 }
 
-//Creating a new function to find the gender of  states {(q, ds, p)} in the primitive Bases;
+// Creating a new function to find the gender of  states {(q, ds, p)} in the primitive Bases;
 // gen_ = 0; gen. South;
 // gen_ = 1; gen. East;
 // gen_ = 2; gen. North;
@@ -231,9 +231,10 @@ for(int i=0; i< nq; i++){
 }
 
 Populate_N(N, dimen_p_);
-double lamb_ = lamb();								    // It's reading Lambda from parameters.txt.
-double aux1 = (1-pow(lamb_,-N-2))/sqrt((1-pow(lamb_,-2*(N-1)-1))*(1-pow(lamb_,-2*(N-1)-3)));
-double t_N = aux1*(1-pow(lamb_,-1))*(pow(lamb_,-(N-1)/2))/log(lamb_); 			    // It's calculating the coupling t_(N-1).
+double lamb_ = lamb();								    // Reading Lambda from parameters.txt.
+double E_uv_ = E_uv();
+double aux = (1-pow(lamb_,-N-2))/sqrt((1-pow(lamb_,-2*(N-1)-1))*(1-pow(lamb_,-2*(N-1)-3)));
+double t_N = aux*(1-pow(lamb_,-1))*(pow(lamb_,-(N-1)/2))/log(lamb_); 			    // Calculating the coupling t_(N-1).
 std::cout << "t_{N-1}= "<< t_N <<std::endl;
 
 // H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];

@@ -89,6 +89,6 @@ return 0;
 // Até a iteração N = 2, todas as autoenergias foram corrigidas. 
 // 05/01/2022 até o N =  4, 2:40 min. 
 // Projeções conferidas até N= 3. Mesmos valores de W1 e W2. 
-//  
+// Energia de corte ultravioleta. E_uv.
 
 
