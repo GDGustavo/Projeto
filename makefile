@@ -6,10 +6,10 @@ CFLAGS = -Wall -g
  
 # ****************************************************
 # Targets needed to bring the executable up to date
-projeto_doc: param.o execute.o giv0.o iterd.o iterd_r.o iterN.o iterN_r.o mel.o mel_2.o proj.o makefile
+projeto_doc: param.o execute.o giv0.o iterd.o iterd_r.o iterN.o iterN_r.o mel.o mel_2.o proj.o makefile parameters.txt
 	$(CC) $(CFLAGS) -o projeto_doc param.o execute.o iterd.o giv0.o iterN.o mel.o mel_2.o iterd_r.o proj.o iterN_r.o
 
-execute.o: execute.cpp
+execute.o: execute.cpp parameters.txt
 	$(CC) $(CFLAGS) -c execute.cpp
 
 giv0.o: giv0.cpp giv0.h

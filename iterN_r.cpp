@@ -164,9 +164,10 @@ for(int i=0; i< nq; i++){
 
 Populate_N_R(N, dimen_p_);
 double lamb_ = lamb();								    // It's reading Lambda from parameters.txt.
-double aux1 = (1-pow(lamb_,-N-2))/sqrt((1-pow(lamb_,-2*(N-1)-1))*(1-pow(lamb_,-2*(N-1)-3)));
-double t_N = aux1*(1-pow(lamb_,-1))*(pow(lamb_,-(N-1)/2))/log(lamb_); 			    // It's calculating the coupling t_(N-1).
-std::cout << "t_{N-1}= "<< t_N <<std::endl;
+double aux1 = (1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_, (float) -2*(N-1)-3)));
+double D_N  = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
+double t_N  = aux1;								    // It's calculating the coupling t_(N-1).
+std::cout << "t_{N-1}/D_N= "<< t_N <<std::endl;
 
 // H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];
 
@@ -198,7 +199,7 @@ for(int q = 0; q < nq; q++){
 					long k = (p2*(p2+1)/2) + p1; 			// Memory address starting in k=0;
 					HN_[q][ds][k] = 0; 
 					if ((g1==g2)&&(q1==q2)&&(r1==r2)&&(ds1==ds2)){			// Diagonal terms.
-					HN_[q][ds][k]= eigen2_erg_read(q1,ds1,(long) r1-1); 
+					HN_[q][ds][k]= sqrt(lamb_)*eigen2_erg_read(q1,ds1,(long) r1-1); 
 					}
 					if ((g2==0)&&(g1==1)){						// SE terms.
 					HN_[q][ds][k] = t_N*mel2_ne_read(q1,ds1,k_mel_1);
@@ -262,17 +263,17 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solving the H
+			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1);	// Solving the H
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
 			std::cout << "Eigen values: " << std::endl;
 			for (long k=0; k<dim; k++) {
-				std::cout << eigen_values[k] << ";";
+				std::cout << D_N*eigen_values[k] << ";";
 				eigen2_erg_write(q,ds,k,eigen_values[k]); 
 			}
 			delete[] eigen_values;
 			eigen_values = NULL;
-			//std::cout << std::endl; << "Eigen vectors matrix:" << std::endl;
+			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i<dim; i++) {
 				for (int j=0; j<dim; j++) { 
 			//		std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
@@ -392,7 +393,7 @@ save_projection(N-1, dimen_p_);         // Save the past projection matrix
 projection_delete(N-1, dimen_p_);       // Delete the projection matrix from the iteraction N-1
 projection_start(N);                  // Starting the adress in the sector (q, ds) to save the matrix projection
 
-//std::cout <<"Bases Projection for 'Right Side' N = " << N <<";" << std::endl << std::endl;
+std::cout <<"Bases Projection for 'Right Side' N = " << N <<";" << std::endl << std::endl;
 
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
@@ -424,8 +425,10 @@ for(int q=0; q<nq; q++){
 					sum = 0;
 				}
 				projection_write(q,ds,k,sum);
-				//std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				//std::cout << projection_read(q,ds,k) << std::endl;
+				int r_L2 = k/dim;					//Line
+				int r_R2 = k - r_L2*dim;				//Colum
+				std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L2 + 1 << ";" <<r_R2 + 1 << ") = " <<'\t'; 
+				std::cout << projection_read(q,ds,k) << std::endl;
 			} // end for k
 		} // end if dim > 0
 	} // end for ds

@@ -6,6 +6,9 @@
 #include "mel.h"
 #include "mel_2.h"
 #include "proj.h"
+#include <time.h> 
+
+time_t beg_time = time(NULL);
 
 int N_max = 3;								// Maximum number of iterations;
 static int **dimen_p_;							// Matrix: How many bases have in (Q,S)_{N-1} sector.  
@@ -81,9 +84,14 @@ for(int ni = 1; ni <= N_max; ni ++){
 	}
 	delete[] dimen_;
 
+time_t end_time = time(NULL);
+
+float time_ = difftime(end_time, beg_time) /60;    					// Converte in seconds to minutes
+
+std::cout << "The code is executed in " << time_  <<  " minutes." << std::endl;
+
 return 0;
 }
-
 
 
 // Até a iteração N = 2, todas as autoenergias foram corrigidas. 

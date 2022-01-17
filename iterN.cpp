@@ -231,13 +231,21 @@ for(int i=0; i< nq; i++){
 }
 
 Populate_N(N, dimen_p_);
-double lamb_ = lamb();								    // Reading Lambda from parameters.txt.
-double E_uv_ = E_uv();
-double aux = (1-pow(lamb_,-N-2))/sqrt((1-pow(lamb_,-2*(N-1)-1))*(1-pow(lamb_,-2*(N-1)-3)));
-double t_N = aux*(1-pow(lamb_,-1))*(pow(lamb_,-(N-1)/2))/log(lamb_); 			    // Calculating the coupling t_(N-1).
-std::cout << "t_{N-1}= "<< t_N <<std::endl;
+double lamb_ = lamb();								    	// Reading Lambda from parameters.txt.
+double E_uv_ = (double) E_uv();
+double aux = (1-pow(lamb_, (float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_,(float) -2*(N-1)-3)));	
+double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_);		//
+//double t_N = aux*D_N;									// Calculating the coupling t_(N-1).
+double t_N = aux; 									// Att, Scaled Hamiltonian.
 
-// H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];
+std::cout << "t_{N-1}/D_N= " << '\t' << t_N <<std::endl;
+std::cout << "D_N = "<< '\t' << '\t' << D_N <<std::endl;
+std::cout << "t_{N-1}= " << '\t' <<  t_N*D_N <<std::endl;
+std::cout << "E_uv_= " << '\t' <<  E_uv_ <<std::endl;
+
+
+// H_N[p',p] = H_{N-1}[p',p] + t_{N-1}*M_N[p',p] + t_{N-1}*M_N[p,p']; 			Non scaled Hamiltonian
+// H_N[p',p] = sqrt(\Lambda)*H_{N-1}[p',p] + t'_{N-1}*M_N[p',p] + t'_{N-1}*M_N[p,p']; 	Scaled Hamiltonian
 
 // Creating here the 2D pointer to hamiltonian sector (q,ds). 
 double ***HN_ = new double**[nq];
@@ -267,7 +275,8 @@ for(int q = 0; q < nq; q++){
 					long k = (p2*(p2+1)/2) + p1; 			// Memory address starting in k=0;
 					HN_[q][ds][k] = 0; 
 					if ((g1==g2)&&(q1==q2)&&(r1==r2)&&(ds1==ds2)){			// Diagonal terms.
-					HN_[q][ds][k]= eigen_erg_read(q1,ds1,(long) r1-1); 
+					//HN_[q][ds][k]= eigen_erg_read(q1,ds1,(long) r1-1);
+					HN_[q][ds][k]= sqrt(lamb_)*eigen_erg_read(q1,ds1,(long) r1-1);  	// Att, scaled H
 					}
 					if ((g2==0)&&(g1==1)){						// SE terms.
 					HN_[q][ds][k] = t_N*mel_ne_read(q1,ds1,k_mel_1);
@@ -332,23 +341,25 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solving the H
+			int ret = 0; 
+			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1);	// Solving the H
+			std::cout << "Number of Basis bellow the ultraviolet cut-off Energy: " << ret << std::endl;
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
-			std::cout << "Eigen values: " << std::endl;
+			std::cout << "Eigen values (Non scaled): " << std::endl;
 			for (long k=0; k<dim; k++) {
+				eigen_erg_write(q,ds,k,eigen_values[k]);
 				std::cout << eigen_values[k] << ";";
-				eigen_erg_write(q,ds,k,eigen_values[k]); 
 			}
 			delete[] eigen_values;
 			eigen_values = NULL;
-			//std::cout << std::endl; << "Eigen vectors matrix:" << std::endl;
+			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i<dim; i++) {
 				for (int j=0; j<dim; j++) { 
-			//		std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
+					std::cout << eigen_vectors[i][j] << ";";
 					eigen_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
 				}
-			//	std::cout << std::endl;
+				std::cout << std::endl;
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
@@ -396,11 +407,11 @@ for(int q=0;q<(nq-1);q++){
 									int l1 = find_father(q,ds,g1,p1+1);		// Father 1?
 									int l2 = find_father(q+1,ds+1,g2,p2+1);	// Father 2?
 									if (l2==l1){			// delta(l1,l2)
-									int r2 = k/dim;      		// line
-									int r1 = k - r2*dim; 		// Collum
-									double aux2=eigen_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
-									double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
-									sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
+									 int r2 = k/dim;      		// line
+									 int r1 = k - r2*dim; 		// Collum
+									 double aux2=eigen_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
+									 double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
+									 sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
 									}
 								}
 							}
@@ -438,11 +449,11 @@ for(int q=0;q<(nq-1);q++){
 									int l1 = find_father(q,ds,g1,p1+1);		// Father 1?
 									int l2 = find_father(q+1,ds-1,g2,p2+1);	// Father 2?
 									if (l2==l1){			// delta(l1,l2)
-									int r2 = k/dim;      		// line
-									int r1 = k - r2*dim; 		// Collum
-									double aux2=eigen_vect_read(q+1,ds-1,(long) r2*dim2 +p2);
-									double aux1=eigen_vect_read(q,ds,(long) r1*dim +p1);
-									sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
+									 int r2 = k/dim;      		// line
+									 int r1 = k - r2*dim; 		// Collum
+									 double aux2=eigen_vect_read(q+1,ds-1,(long) r2*dim2+p2);
+									 double aux1=eigen_vect_read(q,ds,(long) r1*dim +p1);
+									 sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
 									}	
 								}
 							}

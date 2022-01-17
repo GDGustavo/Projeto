@@ -30,5 +30,5 @@ vect[nroot][0] vect[nroot][1] ...vect[nroot][dim]
 returns nroot
 */
 extern int givens(int n, int nrootx, double *a, 
-		  double *root, double *vect[], int check =  0); 
+		  double *root, double *vect[], int check); 
 #endif

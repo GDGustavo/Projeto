@@ -144,6 +144,9 @@ H0_[3][1][2] = 4*W + E_d();
 
 H0_[4][0][0] = 4*W + 2*E_d() + U();
 
+double lamb_ = lamb();
+double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
+
 eigen_start(0); 						
 
 // Finding the Bases that diagonalize the Hamiltonian and the eigenvalues for each Base.
@@ -164,6 +167,7 @@ for (int q=0; q < nq; q++) {
 			double *Hamiltonian = new double[Nel_max];             		// Change the size
 			for (int k=0; k<Nel_max; k++) {					// Saving the values to diagolize
 				Hamiltonian[k]= H0_[q][ds][k];
+				Hamiltonian[k]= H0_[q][ds][k]/D_0;				// Att, scaled hamiltonian.
 			}
 			delete[] H0_[q][ds];
 			for (int k=0; k<dim; k++) {					// Making all elements zero
@@ -173,13 +177,14 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0); 		// Solving the H
+			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 		// Solving the H
+			std::cout << "return givens = " << ret << std::endl;
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
-			std::cout << "Eigen values: " << std::endl << '\t';
+			std::cout << "Eigen values (Non Scaled): " << std::endl << '\t';
 			for (long k=0; k<dim; k++) {
 				eigen_erg_write(q,ds,k,eigen_values[k]);	        			// Saving the eigenvalues 
-				std::cout << eigen_values[k] << "; ";          
+				std::cout << D_0*eigen_values[k] << "; ";          
 			}
 			delete[] eigen_values;
 			eigen_values = NULL; 
@@ -305,5 +310,37 @@ NN_ = NULL;
 NW_ = NULL;
 
 // End Function ITER0(); OK. Working very well!
+
+
+/*
+double t0 = 0.619806;
+double t1 = 0.271711;
+
+Eigen::MatrixXd H;
+H = Eigen::MatrixXd::Ones(4,4);
+for(int i=0; i< 4; i++){
+	for (int j = 0; j<4; j++){ 
+			H(i,j) = 0;
+	}
+}
+
+H(0,0) = E_d();
+H(0,1) = sqrt(2)*V_0();
+
+H(1,2) = t0;
+H(1,1) = 2*W_1();
+H(1,0) = sqrt(2)*V_0();
+
+H(2,1) = t0;
+H(2,3) = t1; 
+
+H(3,2) = t1;
+
+std::cout << H << std::endl;
+Eigen::EigenSolver<Eigen::MatrixXd> s(H);
+std::cout << s.eigenvalues() << std::endl;
+std::cout << s.eigenvectors() << std::endl;
+//*/
+
 
 }

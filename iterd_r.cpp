@@ -55,6 +55,9 @@ void iter0_r(double W){
 
 int nq = 2*(2+0)+1; // charge: {-2,-1, 0, 1, 2} => {0,1,2,3,4}
 int ns = (0+2)+1;  // double spin: {0, 1 2} => {0,1,2}
+double lamb_ = lamb();
+double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
+
 
 // Creating the Basis and Making all matrix elements zero.
 NS_ = new int*[nq];
@@ -144,7 +147,7 @@ for (int q=0; q < nq; q++) {
 			int Nel_max = (1+dim)*dim/2;                                		// Maximum number of elements in LTM
 			double *Hamiltonian = new double[Nel_max];             		// Change the size
 			for (int k=0; k<Nel_max; k++) {					// Saving the values to diagolize
-				Hamiltonian[k]= H0_[q][ds][k];
+				Hamiltonian[k]= H0_[q][ds][k]/D_0;
 			}
 			delete[] H0_[q][ds];
 			for (int k=0; k<dim; k++) {					// Making all elements zero
@@ -154,13 +157,13 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0); 		// Solving the H
+			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 		// Solving the H
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
 			std::cout << "Eigen values: " << std::endl << '\t';
 			for (long k=0; k<dim; k++) {
 				eigen2_erg_write(q,ds,k,eigen_values[k]);	        			// Saving the eigenvalues 
-				std::cout << eigen_values[k] << "; ";          
+				std::cout << D_0*eigen_values[k] << "; ";          
 			}
 			delete[] eigen_values;
 			eigen_values = NULL; 
@@ -265,7 +268,7 @@ for(int q=0; q<nq; q++){
 				int r_r = k - r_l*dim;					// Colum
 				for(int p = 0; p < dim; p++){
 					double aux_l = eigen_vect_read(q,ds, (long) r_l*dim +p);
-					double aux_r = eigen2_vect_read(q,ds,(long) r_r*dim + p);
+					double aux_r = eigen2_vect_read(q,ds,(long) r_r*dim +p);
 					sum = sum + aux_l*aux_r;
 				}
 				if(abs(sum) < 0.0000000001){
