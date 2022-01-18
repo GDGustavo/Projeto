@@ -10,7 +10,7 @@
 
 time_t beg_time = time(NULL);
 
-int N_max = 3;								// Maximum number of iterations;
+int N_max = 2;								// Maximum number of iterations;
 static int **dimen_p_;							// Matrix: How many bases have in (Q,S)_{N-1} sector.  
 static int **dimen_;							// Matrix: How many bases have in (Q,S)_N sector.
 
@@ -36,7 +36,7 @@ for(int i=0; i< nq; i++){
 }
 
 iter0_l(W1, dimen_p_); 								// Initial conditions for "Left Side" N = 0;
-//iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
+iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
 
 //  Matrix |Q' dS' r'|f_N^+|Q dS r|: N = 0;
 //  Eigenvalues: |Q dS r|H_N|Q dS r|: N = 0;
@@ -59,7 +59,7 @@ for(int ni = 1; ni <= N_max; ni ++){
 	}
 
 	iterN_L(ni, dimen_p_, dimen_);						// Solve the 'Left Side' hamiltonian for N=ni
-	//iterN_R(ni, dimen_p_, dimen_);						// Solve the 'Right Side' hamiltonian for N=ni
+	iterN_R(ni, dimen_p_, dimen_);						// Solve the 'Right Side' hamiltonian for N=ni
 
 	nq = 2*(ni-1+2)+1; 							// Delete the dimen_p_ matrix. 
 	for (int q = 0; q < nq; q++){
@@ -77,7 +77,7 @@ for(int ni = 1; ni <= N_max; ni ++){
 	eigen_delete(N_max,dimen_p_); 						// Delete all elements saved in eigen matrix
 	mel_nw_delete(N_max,dimen_p_); 						// Delete all elements saved in mel_nw_
 	mel_ne_delete(N_max,dimen_p_); 						// Delete all elements saved in mel_ne_
-	//projection_delete(N_max,dimen_p_);						// Delete all elements saved in projection_
+	projection_delete(N_max,dimen_p_);						// Delete all elements saved in projection_
 
 	for (int q = 0; q < nq; q++){
 		delete[] dimen_[q];
