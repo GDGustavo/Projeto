@@ -35,9 +35,8 @@ projection_[q][ds][k] = value;
 
 double projection_read(int q, int ds, long k) {
 
-double value = projection_[q][ds][k];
+return projection_[q][ds][k];
 
-return value; 
 }
 
 // Delete all elements from the matrix.

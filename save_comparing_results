@@ -1,19 +1,3 @@
-Starting the NRG code...
-
-
-Reading all parameters...
-Lambda = 4
-Gamma = 4
-z_m = 4
-U = 0
-N_max = 3
-E_d = -0.5
-V_0 = 0.25
-E_uv = 10
-W_1 = 0.125
-W_2 = 0.25
-Done! All parameters have already been read!
-
 Diagonalization process for  'Left Side' N = 0 is starting now....
 
 	N=0		[-2;0] Sector;
@@ -253,4 +237,6 @@ Diagonalization process already finished for 'Left Side' N = 2!
 
 
 Done! Iteraction 2 complete!
+
+
 

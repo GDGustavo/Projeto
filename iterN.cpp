@@ -329,12 +329,12 @@ for (int q=0; q < nq; q++) {
 			long Nel_max = (1+dim)*dim/2;	                      		// Maximum number of elements of LTM
 			double* Hamiltonian  = new double[Nel_max];                     	// H[q,ds] to use in diagonalization
 			double* Hamiltonian_ = new double[Nel_max];                     	// H[q,ds] to use in diagonalization
-			for (long k=0; k<Nel_max; k++) {					// Saving the values to diagolize
+			for (long k=0; k<Nel_max; k++) {					// Save the values to diagolize
 				Hamiltonian[k] = HN_[q][ds][k];
 				Hamiltonian_[k]= HN_[q][ds][k]; 
 			}
-			delete[] HN_[q][ds];						// Deteling the HN in the sector (q,ds)
-			for (int k=0; k<dim; k++) {					// Making all elements zero
+			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
+			for (int k=0; k<dim; k++) {					// Make all elements zero
 				eigen_values[k] = 0;
 				eigen_vectors[k] = new double[dim];
 				for(int h=0; h< dim; h++){
@@ -345,22 +345,22 @@ for (int q=0; q < nq; q++) {
 			int ret = givens(dim, 0 , Hamiltonian_ , eigen_values, eigen_vectors, 0);	// Find the Cut-off dim
 			delete[] Hamiltonian_;
 
-			for (int k=0; k<dim; k++) {						// Making all elements zero
+			for (int k=0; k<dim; k++) {						// Make all elements zero
 				eigen_values[k] = 0;
 				for(int h=0; h< dim; h++){
 					eigen_vectors[k][h] = 0;
 				}
 			}
 
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1);		// Solving the H
+			givens(dim, abs(ret) , Hamiltonian , eigen_values, eigen_vectors, 1);		// Solve the H with cut-off
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
 
-			int dim_c = dim;	// = abs(ret);						// Dim bellow  the cut-off
-			dimen_[q][ds] = dim_c;							// Saving the Dim[q.ds]
+			int dim_c = abs(ret);							// Dim bellow  the cut-off
+			dimen_[q][ds] = dim_c;							// Save the Dim[q.ds]
 
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
-			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim_c);			// Alloc memory to save E-Vectors
+			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim);			// Alloc memory to save E-Vectors
 
 			std::cout << "Ultraviolet Cut-off Energy (non scaled): " << D_N*E_uv_ << std::endl;
 			std::cout << "Number of Basis bellow the ultraviolet cut-off Energy: " << ret << std::endl;	
@@ -372,8 +372,8 @@ for (int q=0; q < nq; q++) {
 			delete[] eigen_values;
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i<dim_c; i++) {
-				for (int j=0; j<dim_c; j++) { 
+			for (int i=0; i<dim_c; i++) {						// Line 0, 1... dim_cut_off
+				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
 			//		std::cout << eigen_vectors[i][j] << ";";
 					eigen_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
 				}
@@ -405,38 +405,44 @@ for(int q=0;q<(nq-1);q++){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
 			int N13 = N12 + NN_[q][ds];	// Sup Limit for g1 = 2
+			int N14 = N13 + NW_[q][ds];	// Sup Limit for g1 = 3 (Dim without the dim Cut-off) 
 			int N21 = NS_[q+1][ds+1];		// Sup Limit for g2 = 0
 			int N22 = N21 + NE_[q+1][ds+1];	//
 			int N23 = N22 + NN_[q+1][ds+1];	//
+			int N24 = N23 + NW_[q+1][ds+1];	// Sup Limit for g2 = 3 (Dim without the dim Cut-off) 
 			mel_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-					for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
-						for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
-							int l1 = find_father(q,ds,0,p1+1);		// Father 1? 
-							int l2 = find_father(q+1,ds+1,1,p2+1);	// Father 2?
-							if (l2==l1){				// delta(l1,l2)
-								int r2 = k/dim;      		// line
-								int r1 = k - r2*dim; 		// Collum
-								double aux2=eigen_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
-								double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
-								sum = sum + aux2*aux1;
-							}
-						}  						
-					}
-					for(int p1=N13; p1< dim; p1++){ 				// g1(p1) = 3;
-						for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-							int l1 = find_father(q,ds,3,p1+1);		// Father 1? 
-							int l2 = find_father(q+1,ds+1,2,p2+1);	// Father 2?
-							if (l2==l1){				// delta(l1,l2)
-								int r2 = k/dim;      		// line
-								int r1 = k - r2*dim; 		// Collum
-								double aux2=eigen_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
-								double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
-								sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
-							}
-						}  						
-					}
+				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
+					for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
+						//int l1 = find_father(q,ds,0,p1+1);	// Father 1? 
+						//int l2 = find_father(q+1,ds+1,1,p2+1);	// Father 2?
+						int l1 = p1;
+						int l2 = p2 - N21;
+						if (l2==l1){				// delta(l1,l2)
+							int r2 = k/dim;      		// line
+							int r1 = k - r2*dim; 		// Collum
+							double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+							sum = sum + aux2*aux1;
+						}
+					}  						
+				}
+				for(int p1=N13; p1< N14; p1++){ 				// g1(p1) = 3;
+					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
+						//int l1 = find_father(q,ds,3,p1+1);	// Father 1? 
+						//int l2 = find_father(q+1,ds+1,2,p2+1);	// Father 2?
+						int l1 = p1 - N13;
+						int l2 = p2 - N22;
+						if (l2==l1){				// delta(l1,l2)
+							int r2 = k/dim;      		// line
+							int r1 = k - r2*dim; 		// Collum
+							double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+							sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
+						}
+					}  					
+				}
 				mel_ne_write(q,ds,k,sum);
 			} //end for k
 		} // end if dim*dim2
@@ -448,39 +454,45 @@ for(int q=0;q<(nq-1);q++){
 		if (dim*dim2>0){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
-			int N13 = N12 + NN_[q][ds];	// Sup Limit for g1 = 2
 			int N21 = NS_[q+1][ds-1];		// Sup Limit for g2 = 0
+			int N13 = N12 + NN_[q][ds];	// Sup Limit for g1 = 2
+			int N14 = N13 + NW_[q][ds];	// Sup Limit for g1 = 3 (Dim without the dim Cut-off)
 			int N22 = N21 + NE_[q+1][ds-1];	//
 			int N23 = N22 + NN_[q+1][ds-1];	//
+			int N24 = N23 + NW_[q+1][ds-1];	// Sup Limit for g2 = 3 (Without the dim Cut-off) 
 			mel_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 					// g1(p1) = 0;
-						for(int p2=N23; p2< dim2; p2++){			// g2(p2) = 3;
-							int l1 = find_father(q,ds,0,p1+1);		// Father 1? 
-							int l2 = find_father(q+1,ds-1,3,p2+1);	// Father 2?
-							if (l2==l1){				// delta(l1,l2)
-								int r2 = k/dim;      		// line
-								int r1 = k - r2*dim; 		// Collum
-								double aux2=eigen_vect_read(q+1,ds-1,(long)r2*dim2 +p2);
-								double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
-								sum = sum + aux2*aux1;
-							}
-						}  						
-					}
-					for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
-						for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-							int l1 = find_father(q,ds,1,p1+1);		// Father 1? 
-							int l2 = find_father(q+1,ds-1,2,p2+1);	// Father 2?
-							if (l2==l1){				// delta(l1,l2)
-								int r2 = k/dim;      		// line
-								int r1 = k - r2*dim; 		// Collum
-								double aux2=eigen_vect_read(q+1,ds-1,(long)r2*dim2 +p2);
-								double aux1=eigen_vect_read(q,ds,(long)r1*dim +p1);
-								sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
-							}
-						}  						
-					}
+				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
+					for(int p2=N23; p2< N24; p2++){			// g2(p2) = 3;
+						//int l1 = find_father(q,ds,0,p1+1);	// Father 1? 
+						//int l2 = find_father(q+1,ds-1,3,p2+1);	// Father 2?
+						int l1 = p1;
+						int l2 = p2 - N23;
+						if (l2==l1){				// delta(l1,l2)
+							int r2 = k/dim;      		// line
+							int r1 = k - r2*dim; 		// Collum
+							double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+							sum = sum + aux2*aux1;
+						}
+					}  						
+				}
+				for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
+					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
+						//int l1 = find_father(q,ds,1,p1+1);	// Father 1? 
+						//int l2 = find_father(q+1,ds-1,2,p2+1);	// Father 2?
+						int l1 = p1 - N11;
+						int l2 = p2 - N22;
+						if (l2==l1){				// delta(l1,l2)
+							int r2 = k/dim;      		// line
+							int r1 = k - r2*dim; 		// Collum
+							double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+							sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
+						}
+					}  						
+				}
 				mel_nw_write(q,ds,k,sum);
 			} // end for k 
 		} // end if dim*dim2

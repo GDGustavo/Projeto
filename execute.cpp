@@ -8,13 +8,15 @@
 #include "proj.h"
 #include <time.h> 
 
-time_t beg_time = time(NULL);
-
-int N_max = 2;								// Maximum number of iterations;
-static int **dimen_p_;							// Matrix: How many bases have in (Q,S)_{N-1} sector.  
-static int **dimen_;							// Matrix: How many bases have in (Q,S)_N sector.
+int N_max = 5;								// Maximum number of iterations;
+static int **dimen_L_p;							// Number of basis on the Left (Q,S)_{N-1} sector.
+static int **dimen_L;							// Number of basis on the Left (Q,S)_N sector.
+static int **dimen_R_p;							//  //   	        Right  //  	.   
+static int **dimen_R;							//  //                    Right  //  	.
 
 int main(){
+time_t beg_time = time(NULL);
+
 
 std::cout << "Starting the NRG code..." << std::endl<< std::endl;
 std::cout << std::endl;	
@@ -27,16 +29,26 @@ std::cout << std::endl;
 int nq = 2*(2)+1; 								// Total number of possibles q in N=0. 
 int ns = 2+1; 									// Total number of possibles dsin N=0.
 
-dimen_p_ = new int*[nq];
+dimen_L_p = new int*[nq];
 for(int i=0; i< nq; i++){
-	dimen_p_[i] = new int[ns];
+	dimen_L_p[i] = new int[ns];
 	for(int j=0; j< ns; j++){
-		dimen_p_[i][j] = 0;
+		dimen_L_p[i][j] = 0;
 	}
 }
 
-iter0_l(W1, dimen_p_); 								// Initial conditions for "Left Side" N = 0;
+
+
+iter0_l(W1, dimen_L_p); 								// Initial condictions for "Left Side" N = 0;
 iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
+
+dimen_R_p = new int*[nq];
+for(int i=0; i< nq; i++){
+	dimen_R_p[i] = new int[ns];
+	for(int j=0; j< ns; j++){
+		dimen_R_p[i][j] = dimen_L_p[i][j];
+	}
+}
 
 //  Matrix |Q' dS' r'|f_N^+|Q dS r|: N = 0;
 //  Eigenvalues: |Q dS r|H_N|Q dS r|: N = 0;
@@ -50,39 +62,42 @@ for(int ni = 1; ni <= N_max; ni ++){
 	nq = 2*(ni+2)+1; 								// Total number of possibles q. 
 	ns = ni + 2 +1; 								// Total number of possibles ds.
 
-	dimen_ = new int*[nq]; 							// Matrix to save how many bases have for N=ni.
+	dimen_L = new int*[nq]; 							// Matrix to save the basis in the Left sector.
 	for(int i=0; i< nq; i++){
-		dimen_[i] = new int[ns];
+		dimen_L[i] = new int[ns];
 		for(int j=0; j< ns; j++){
-			dimen_[i][j] = 0;
+			dimen_L[i][j] = 0;
 		}
 	}
 
-	iterN_L(ni, dimen_p_, dimen_);						// Solve the 'Left Side' hamiltonian for N=ni
-	iterN_R(ni, dimen_p_, dimen_);						// Solve the 'Right Side' hamiltonian for N=ni
-
-	nq = 2*(ni-1+2)+1; 							// Delete the dimen_p_ matrix. 
-	for (int q = 0; q < nq; q++){
-		delete[] dimen_p_[q];
+	dimen_R = new int*[nq]; 							// Matrix to save the basis in the right sector.
+	for(int i=0; i< nq; i++){
+		dimen_R[i] = new int[ns];
+		for(int j=0; j< ns; j++){
+			dimen_R[i][j] = 0;
+		}
 	}
-	delete[] dimen_p_;
-	dimen_p_ = NULL;
 
-	dimen_p_ = dimen_;							// New imput: number of bases
+	iterN_L(ni, dimen_L_p, dimen_L);						// Solve the 'Left Side' hamiltonian for N=ni
+//	iterN_R(ni, dimen_R_p, dimen_R);						// Solve the 'Right Side' hamiltonian for N=ni
+
+	nq = 2*(ni-1+2)+1; 							// Delete the dimen_L_p matrix. 
+	for (int q = 0; q < nq; q++){
+		delete[] dimen_L_p[q];
+	}
+	delete[] dimen_L_p;
+	dimen_L_p = NULL;
+	dimen_L_p = dimen_L;							// Left: New imput of number of basis
+										 
+	for (int q = 0; q < nq; q++){						// Delete the dimen_R_p matrix.
+		delete[] dimen_R_p[q];
+	}
+	delete[] dimen_R_p;
+	dimen_R_p = NULL;
+	dimen_R_p = dimen_R;							// Right: New imput of number of basis
 
 	std::cout << "Done! Iteraction " << ni <<  " complete!" << std::endl<< std::endl<< std::endl<< std::endl;
 }
-
-	nq = 2*(N_max+2)+1;
-	eigen_delete(N_max,dimen_p_); 						// Delete all elements saved in eigen matrix
-	mel_nw_delete(N_max,dimen_p_); 						// Delete all elements saved in mel_nw_
-	mel_ne_delete(N_max,dimen_p_); 						// Delete all elements saved in mel_ne_
-	projection_delete(N_max,dimen_p_);						// Delete all elements saved in projection_
-
-	for (int q = 0; q < nq; q++){
-		delete[] dimen_[q];
-	}
-	delete[] dimen_;
 
 time_t end_time = time(NULL);
 
@@ -94,9 +109,9 @@ return 0;
 }
 
 
-// Até a iteração N = 2, todas as autoenergias foram corrigidas. 
-// 05/01/2022 até o N =  4, 2:40 min. 
-// Projeções conferidas até N= 3. Mesmos valores de W1 e W2. 
-// Energia de corte ultravioleta. E_uv.
+// Até a iteração N = 3, todas as autoenergias foram corrigidas. 
+// 18/01/2022 até o N = 5, tempo de execução:  4.40 min. (Cada setor) 
+// Projeções conferidas até N= 4. Mesmos valores de W1 e W2.
+// Energia de corte ultravioleta E_uv inserido no Bra "Left".
 
 
