@@ -8,7 +8,7 @@
 #include "proj.h"
 #include <time.h> 
 
-int N_max = 5;								// Maximum number of iterations;
+int N_max = 3;								// Maximum number of iterations;
 static int **dimen_L_p;							// Number of basis on the Left (Q,S)_{N-1} sector.
 static int **dimen_L;							// Number of basis on the Left (Q,S)_N sector.
 static int **dimen_R_p;							//  //   	        Right  //  	.   
@@ -79,7 +79,7 @@ for(int ni = 1; ni <= N_max; ni ++){
 	}
 
 	iterN_L(ni, dimen_L_p, dimen_L);						// Solve the 'Left Side' hamiltonian for N=ni
-//	iterN_R(ni, dimen_R_p, dimen_R);						// Solve the 'Right Side' hamiltonian for N=ni
+	iterN_R(ni, dimen_R_p, dimen_R);						// Solve the 'Right Side' hamiltonian for N=ni
 
 	nq = 2*(ni-1+2)+1; 							// Delete the dimen_L_p matrix. 
 	for (int q = 0; q < nq; q++){
@@ -110,7 +110,8 @@ return 0;
 
 
 // Até a iteração N = 3, todas as autoenergias foram corrigidas. 
-// 18/01/2022 até o N = 5, tempo de execução:  4.40 min. (Cada setor) 
+// 18/01/2022 até o N = 5, tempo de execução: 4.40 min. (Cada setor)
+// 18/01/2022 até o N = 4, tempo de execução: 1 min (Ambos os setores + projeção).
 // Projeções conferidas até N= 4. Mesmos valores de W1 e W2.
 // Energia de corte ultravioleta E_uv inserido no Bra "Left".
 

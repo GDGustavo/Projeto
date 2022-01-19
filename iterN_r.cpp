@@ -243,6 +243,7 @@ eigen2_start(N);
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
+		dimen_out_[q][ds] = dim;
 		if(dim > 0) {
 			std::cout <<'\t'<<'\t'<<'\t' << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
@@ -307,34 +308,36 @@ for(int q=0;q<(nq-1);q++){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
 			int N13 = N12 + NN_[q][ds];	// Sup Limit for g1 = 2
+			int N14 = N13 + NW_[q][ds];	// Sup Limit for g1 = 3
 			int N21 = NS_[q+1][ds+1];		// Sup Limit for g2 = 0
 			int N22 = N21 + NE_[q+1][ds+1];	//
 			int N23 = N22 + NN_[q+1][ds+1];	//
+			int N24 = N23 + NW_[q+1][ds+1];	//
 			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
 					for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
-						int l1 = find_father_R(q,ds,0,p1+1);		// Father 1? 
-						int l2 = find_father_R(q+1,ds+1,1,p2+1);	// Father 2?
+						int l1 = p1;
+						int l2 = p2 - N21;
 						if (l2==l1){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*dim +p1);
+							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
 							sum = sum + aux2*aux1;
 						}
 					}  						
 				}
-				for(int p1=N13; p1< dim; p1++){ 				// g1(p1) = 3;
+				for(int p1=N13; p1< N14; p1++){ 				// g1(p1) = 3;
 					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = find_father_R(q,ds,3,p1+1);		// Father 1? 
-						int l2 = find_father_R(q+1,ds+1,2,p2+1);	// Father 2?
+						int l1 = p1 - N13;
+						int l2 = p2 - N22;
 						if (l2==l1){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*dim2 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*dim +p1);
+							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
 							sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
 						}
 					}  						
@@ -351,34 +354,36 @@ for(int q=0;q<(nq-1);q++){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
 			int N13 = N12 + NN_[q][ds];	// Sup Limit for g1 = 2
+			int N14 = N13 + NW_[q][ds];	// Sup Limit for g1 = 3
 			int N21 = NS_[q+1][ds-1];		// Sup Limit for g2 = 0
 			int N22 = N21 + NE_[q+1][ds-1];	//
 			int N23 = N22 + NN_[q+1][ds-1];	//
+			int N24 = N23 + NW_[q+1][ds-1];	//
 			mel2_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 					// g1(p1) = 0;
+				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
 					for(int p2=N23; p2< dim2; p2++){			// g2(p2) = 3;
-						int l1 = find_father_R(q,ds,0,p1+1);	// Father 1? 
-						int l2 = find_father_R(q+1,ds-1,3,p2+1);	// Father 2?
+						int l1 = p1;
+						int l2 = p2 - N23;
 						if (l2==l1){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*dim2 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*dim +p1);
+							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
 							sum = sum + aux2*aux1;
 						}
 					}  						
 				}
 				for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
 					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = find_father_R(q,ds,1,p1+1);	// Father 1? 
-						int l2 = find_father_R(q+1,ds-1,2,p2+1);	// Father 2?
+						int l1 = p1 - N11;
+						int l2 = p2 - N22;
 						if (l2==l1){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*dim2 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*dim +p1);
+							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
 							sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
 						}
 					}  						
@@ -394,7 +399,7 @@ for(int q=0;q<(nq-1);q++){
 
 save_projection(N-1, dimen_p_);         // Save the past projection matrix 
 projection_delete(N-1, dimen_p_);       // Delete the projection matrix from the iteraction N-1
-projection_start(N);                  // Starting the adress in the sector (q, ds) to save the matrix projection
+projection_start(N);                    // Starting the adress in the sector (q, ds) to save the matrix projection
 
 std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " << N <<";" << std::endl << std::endl;
 
@@ -406,69 +411,62 @@ for(int q=0; q<nq; q++){
 			int N1 = NS_[q][ds];							// Sup limit for g1 = 0
 			int N2 = N1 + NE_[q][ds]; 							// Sup limit for g1 = 1
 			int N3 = N2 + NN_[q][ds];							// Sup Limit for g1 = 2
+			int N4 = N3 + NW_[q][ds];							// Sup Limit for g1 = 3
 			for(long k = 0; k < dim*dim; k++){
 				double sum = 0;
-				int r_L = k/dim;							//Line
-				int r_R = k - r_L*dim;						//Colum
+				int r_L = k/dim;							// Line
+				int r_R = k - r_L*dim;						// Colum
 				for(int p_L = 0; p_L < N1 ; p_L ++){				// g1 = 0 
 					for(int p_R = 0; p_R < N1; p_R ++){				// g2 = 0
-						int q_L = find_charge_R(q,0); 
-						int ds_L= find_spin_R(ds,0);
-						int dm_L= dimen_p_[q_L][ds_L];
-						int l_L = find_father_R(q,ds,0,p_L+1);
-						int l_R = find_father_R(q,ds,0,p_R+1); 
+						int dm_L= dimen_p_[q][ds];
+						int l_L = p_L + 1;
+						int l_R = p_R + 1; 
 						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
 						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
-						double aux_3 = save_projection_read(q_L,ds_L,(long)(l_L-1)*dm_L +l_R-1); 
+						double aux_3 = save_projection_read(q,ds,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
 				for(int p_L = N1; p_L < N2; p_L ++){				// g1 = 1
 					for(int p_R = N1; p_R < N2; p_R ++){			// g2 = 1
-						int q_L = find_charge_R(q,1); 
-						int ds_L= find_spin_R(ds,1);
-						int dm_L= dimen_p_[q_L][ds_L];
-						int l_L = find_father_R(q,ds,1,p_L+1);
-						int l_R = find_father_R(q,ds,1,p_R+1); 
+						int dm_L= dimen_p_[q-1][ds-1];
+						int l_L = (p_L+1)- N1;
+						int l_R = (p_R+1)- N1; 
 						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
 						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
-						double aux_3 = save_projection_read(q_L,ds_L,(long)(l_L-1)*dm_L +l_R-1); 
+						double aux_3 = save_projection_read(q-1,ds-1,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
 				for(int p_L = N2; p_L < N3; p_L ++){				// g1 = 2
 					for(int p_R = N2; p_R < N3; p_R ++){			// g2 = 2
-						int q_L = find_charge_R(q,2); 
-						int ds_L= find_spin_R(ds,2);
-						int dm_L= dimen_p_[q_L][ds_L];
-						int l_L = find_father_R(q,ds,2,p_L+1);
-						int l_R = find_father_R(q,ds,2,p_R+1); 
+						int dm_L= dimen_p_[q-2][ds];
+						int l_L = (p_L+1) - N2;
+						int l_R = (p_R+1) - N2; 
 						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
 						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
-						double aux_3 = save_projection_read(q_L,ds_L,(long)(l_L-1)*dm_L +l_R-1); 
+						double aux_3 = save_projection_read(q-2,ds,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
-				for(int p_L = N3; p_L < dim; p_L ++){				// g1 = 3
-					for(int p_R = N3; p_R < dim; p_R ++){			// g2 = 3
-						int q_L = find_charge_R(q,3); 
-						int ds_L= find_spin_R(ds,3);
-						int dm_L= dimen_p_[q_L][ds_L];
-						int l_L = find_father_R(q,ds,3,p_L+1);
-						int l_R = find_father_R(q,ds,3,p_R+1); 
+				for(int p_L = N3; p_L < N4; p_L ++){				// g1 = 3
+					for(int p_R = N3; p_R < N4; p_R ++){			// g2 = 3
+						int dm_L= dimen_p_[q-1][ds+1];
+						int l_L = (p_L+1) - N3;
+						int l_R = (p_R+1) - N3; 
 						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
 						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
-						double aux_3 = save_projection_read(q_L,ds_L,(long)(l_L-1)*dm_L +l_R-1); 
+						double aux_3 = save_projection_read(q-1,ds+1,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
 				if(abs(sum) < 0.0000000001){
 					sum = 0;
 				}
-				//else{
-				//std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				//std::cout << sum << std::endl;
-				//}
+				else{
+					std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
+					std::cout << sum << std::endl;
+				}
 				projection_write(q,ds,k,sum);
 			} // end for k
 		} // end if dim > 0

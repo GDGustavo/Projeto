@@ -465,8 +465,6 @@ for(int q=0;q<(nq-1);q++){
 				double sum = 0;
 				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
 					for(int p2=N23; p2< N24; p2++){			// g2(p2) = 3;
-						//int l1 = find_father(q,ds,0,p1+1);	// Father 1? 
-						//int l2 = find_father(q+1,ds-1,3,p2+1);	// Father 2?
 						int l1 = p1;
 						int l2 = p2 - N23;
 						if (l2==l1){				// delta(l1,l2)
@@ -480,8 +478,6 @@ for(int q=0;q<(nq-1);q++){
 				}
 				for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
 					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						//int l1 = find_father(q,ds,1,p1+1);	// Father 1? 
-						//int l2 = find_father(q+1,ds-1,2,p2+1);	// Father 2?
 						int l1 = p1 - N11;
 						int l2 = p2 - N22;
 						if (l2==l1){				// delta(l1,l2)
