@@ -10,7 +10,7 @@
 #define SQRE(x) (x) * (x)
 #define SIGN(x, y) ( ((y) >= 0) ? (x) : -(x) )
 #define MIN(x, y) ( ((x) <= (y)) ? (x) : (y) )
-#define MAXITER 30
+#define MAXITER 40
 #define ONE 1
 
 int idif;

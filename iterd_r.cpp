@@ -157,7 +157,7 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 		// Solving the H
+			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0); 		// Solving the H
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
 			std::cout << "Eigen values: " << std::endl << '\t';

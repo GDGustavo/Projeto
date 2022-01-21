@@ -136,7 +136,7 @@ else{
 return r; // r'    = result[2]; To access the fathers inherent number. 
 }  
 
-void iterN_R(int N, int **dimen_p_, int **dimen_out_){
+void iterN_R(int N, int **dimen_p_, int **dimen_){
 
 std::cout << "Diagonalization process for 'Right Side' N= "<< N << " is starting now..."  << std::endl<< std::endl;
 
@@ -243,12 +243,9 @@ eigen2_start(N);
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
-		dimen_out_[q][ds] = dim;
 		if(dim > 0) {
 			std::cout <<'\t'<<'\t'<<'\t' << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
-			eigen2_erg_alloc_memory(q,ds,(long) dim);
-			eigen2_vect_alloc_memory(q,ds,(long) dim*dim);
 			double *eigen_values = new double[dim];                        	// Changing the size
 			double **eigen_vectors = new double*[dim];		               	// Changing the size
 			long Nel_max = (1+dim)*dim/2;	                      		// Maximum number of elements in LTM
@@ -264,18 +261,23 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1);	// Solving the H
+			int ret = dimen_[q][ds];						// Number of states bellow cut-off.
+			givens(dim, ret , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solving the H
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
+
+			eigen2_erg_alloc_memory(q,ds,(long) ret);
+			eigen2_vect_alloc_memory(q,ds,(long) ret*dim);
+
 			std::cout << "Eigen values: " << std::endl;
-			for (long k=0; k<dim; k++) {
+			for (long k=0; k< ret ; k++) {
 				std::cout << D_N*eigen_values[k] << ";";
 				eigen2_erg_write(q,ds,k,eigen_values[k]); 
 			}
 			delete[] eigen_values;
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i<dim; i++) {
+			for (int i=0; i< ret; i++) {
 				for (int j=0; j<dim; j++) { 
 			//		std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
 					eigen2_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
@@ -302,8 +304,8 @@ mel2_start(N);
 for(int q=0;q<(nq-1);q++){
 	//|Q+1 dS+1 r2|(f_N^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS+1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS+1 p2|(f_N^+)|Q dS p1|
 	for(int ds=0;ds<(ns-1);ds++){
-		int dim = dimen_out_[q][ds];
-		int dim2 = dimen_out_[q+1][ds+1]; 
+		int dim = dimen_[q][ds];
+		int dim2 = dimen_[q+1][ds+1]; 
 		if (dim*dim2>0){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
@@ -348,8 +350,8 @@ for(int q=0;q<(nq-1);q++){
 	} // end for ds
 	//|Q+1 dS-1 r2|(f_N^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS-1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS-1 p2|(f_N^+)|Q dS p1|
 	for(int ds=1;ds<ns;ds++){
-		int dim = dimen_out_[q][ds];
-		int dim2 = dimen_out_[q+1][ds-1];
+		int dim = dimen_[q][ds];
+		int dim2 = dimen_[q+1][ds-1];
 		if (dim*dim2>0){
 			int N11 = NS_[q][ds];		// Sup limit for g1 = 0
 			int N12 = N11 + NE_[q][ds]; 	// Sup limit for g1 = 1
@@ -405,7 +407,7 @@ std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " <<
 
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
-		int dim = dimen_out_[q][ds];
+		int dim = dimen_[q][ds];
 		if(dim> 0){
 			projection_alloc_memory(q,ds, (long) dim*dim);
 			int N1 = NS_[q][ds];							// Sup limit for g1 = 0
@@ -421,8 +423,8 @@ for(int q=0; q<nq; q++){
 						int dm_L= dimen_p_[q][ds];
 						int l_L = p_L + 1;
 						int l_R = p_R + 1; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
+						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
 						double aux_3 = save_projection_read(q,ds,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
@@ -432,8 +434,8 @@ for(int q=0; q<nq; q++){
 						int dm_L= dimen_p_[q-1][ds-1];
 						int l_L = (p_L+1)- N1;
 						int l_R = (p_R+1)- N1; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
+						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
 						double aux_3 = save_projection_read(q-1,ds-1,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
@@ -443,8 +445,8 @@ for(int q=0; q<nq; q++){
 						int dm_L= dimen_p_[q-2][ds];
 						int l_L = (p_L+1) - N2;
 						int l_R = (p_R+1) - N2; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
+						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
 						double aux_3 = save_projection_read(q-2,ds,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}
@@ -454,8 +456,8 @@ for(int q=0; q<nq; q++){
 						int dm_L= dimen_p_[q-1][ds+1];
 						int l_L = (p_L+1) - N3;
 						int l_R = (p_R+1) - N3; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*dim +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*dim + p_R);
+						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
 						double aux_3 = save_projection_read(q-1,ds+1,(long)(l_L-1)*dm_L +l_R-1); 
 						sum = sum + aux_1*aux_2*aux_3;
 					}

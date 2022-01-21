@@ -351,12 +351,10 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-
-			givens(dim, abs(ret) , Hamiltonian , eigen_values, eigen_vectors, 1);		// Solve the H with cut-off
-			delete[] Hamiltonian;
-			Hamiltonian = NULL;
-
 			int dim_c = abs(ret);							// Dim bellow  the cut-off
+			givens(dim, dim_c , Hamiltonian , eigen_values, eigen_vectors, 0);		// Solve the H with cut-off
+			delete[] Hamiltonian;
+			Hamiltonian = NULL;						
 			dimen_[q][ds] = dim_c;							// Save the Dim[q.ds]
 
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
@@ -415,8 +413,6 @@ for(int q=0;q<(nq-1);q++){
 				double sum = 0;
 				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
 					for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
-						//int l1 = find_father(q,ds,0,p1+1);	// Father 1? 
-						//int l2 = find_father(q+1,ds+1,1,p2+1);	// Father 2?
 						int l1 = p1;
 						int l2 = p2 - N21;
 						if (l2==l1){				// delta(l1,l2)
@@ -430,11 +426,9 @@ for(int q=0;q<(nq-1);q++){
 				}
 				for(int p1=N13; p1< N14; p1++){ 				// g1(p1) = 3;
 					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						//int l1 = find_father(q,ds,3,p1+1);	// Father 1? 
-						//int l2 = find_father(q+1,ds+1,2,p2+1);	// Father 2?
 						int l1 = p1 - N13;
 						int l2 = p2 - N22;
-						if (l2==l1){				// delta(l1,l2)
+						if (l1==l2){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
 							double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);

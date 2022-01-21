@@ -177,7 +177,7 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
-			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 		// Solving the H
+			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0); 		// Solving the H
 			std::cout << "return givens = " << ret << std::endl;
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
@@ -310,7 +310,6 @@ NN_ = NULL;
 NW_ = NULL;
 
 // End Function ITER0(); OK. Working very well!
-
 
 /*
 double t0 = 0.619806;

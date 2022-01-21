@@ -1,242 +1,113 @@
-Diagonalization process for  'Left Side' N = 0 is starting now....
-
-	N=0		[-2;0] Sector;
-dim =1
-return givens = 0
-Eigen values (Non Scaled): 
-	0; 	
-	N=0		[-1;1] Sector;
-dim =2
-return givens = 0
-Eigen values (Non Scaled): 
-	-0.640388; 0.390388; 		
-	N=0		[0;0] Sector;
-dim =3
-return givens = 0
-Eigen values (Non Scaled): 
-	-1.28078; -0.25; 0.780776; 			
-	N=0		[0;2] Sector;
-dim =1
-return givens = 0
-Eigen values (Non Scaled): 
-	-0.25; 	
-	N=0		[1;1] Sector;
-dim =2
-return givens = 0
-Eigen values (Non Scaled): 
-	-0.890388; 0.140388; 		
-	N=0		[2;0] Sector;
-dim =1
-return givens = 0
-Eigen values (Non Scaled): 
-	-0.5; 	
-Diagonalization process already finished for 'Left Side' N = 0!
-
-
-
-Done! Iteraction 0 complete!
-
-
-Diagonalization process for 'Left Side' N=1 is starting now...
-
-t_{N-1}/D_N= 	1.14564
-D_N = 		0.541011
-t_{N-1}= 	0.619806
-E_uv_= 	10
-			[-3;0] Sector;
-dim =1
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 1
-Eigen values (Non scaled): 
-0;
-
-			[-2;1] Sector;
-dim =3
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 3
-Eigen values (Non scaled): 
--0.753342;-0.312517;0.815859;
-
-			[-1;0] Sector;
-dim =6
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 6
-Eigen values (Non scaled): 
--1.50668;-1.06586;-0.625033;0.0625167;0.503342;1.63172;
-
-			[-1;2] Sector;
-dim =3
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 3
-Eigen values (Non scaled): 
--1.06586;0.0625167;0.503342;
-
-			[0;1] Sector;
-dim =8
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 8
-Eigen values (Non scaled): 
--1.8192;-1.37838;-0.690826;-0.25;-0.25;0.190826;0.878376;1.3192;
-
-			[0;3] Sector;
-dim =1
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 1
-Eigen values (Non scaled): 
--0.25;
-
-			[1;0] Sector;
-dim =6
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 6
-Eigen values (Non scaled): 
--2.13172;-1.00334;-0.562517;0.125033;0.565859;1.00668;
-
-			[1;2] Sector;
-dim =3
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 3
-Eigen values (Non scaled): 
--1.00334;-0.562517;0.565859;
-
-			[2;1] Sector;
-dim =3
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 3
-Eigen values (Non scaled): 
--1.31586;-0.187483;0.253342;
-
-			[3;0] Sector;
-dim =1
-Ultraviolet Cut-off Energy (non scaled): 5.41011
-Number of Basis bellow the ultraviolet cut-off Energy: 1
-Eigen values (Non scaled): 
--0.5;
-
-Diagonalization process already finished for 'Left Side' N = 1!
-
-
-
-Done! Iteraction 1 complete!
-
-
-
 Diagonalization process for 'Left Side' N=2 is starting now...
 
 t_{N-1}/D_N= 	1.00446
 D_N = 		0.270505
 t_{N-1}= 	0.271711
-E_uv_= 	10
+E_uv_= 	2
 			[-4;0] Sector;
 dim =1
-Ultraviolet Cut-off Energy (non scaled): 2.70505
+Ultraviolet Cut-off Energy (non scaled): 0.541011
 Number of Basis bellow the ultraviolet cut-off Energy: 1
 Eigen values (Non scaled): 
 0;
 
 			[-3;1] Sector;
 dim =4
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 4
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 3
 Eigen values (Non scaled): 
--0.773527;-0.395417;0.0711786;0.847766;
+-0.773527;-0.395417;0.0711786;
 
 			[-2;0] Sector;
-dim =10
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 10
+dim =9
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 8
 Eigen values (Non scaled): 
--1.54705;-1.16894;-0.790834;-0.702349;-0.324238;0.0742382;0.142357;0.452349;0.918944;1.69553;
+-1.54705;-1.16894;-0.790814;-0.702301;-0.323843;0.075058;0.14421;0.458577;
 
 			[-2;2] Sector;
 dim =6
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 6
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 5
 Eigen values (Non scaled): 
--1.16894;-0.702349;-0.324238;0.0742382;0.452349;0.918944;
+-1.16894;-0.702349;-0.324238;0.0742382;0.452349;
 
 			[-1;1] Sector;
-dim =20
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 20
+dim =18
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 15
 Eigen values (Non scaled): 
--1.94247;-1.56436;-1.47588;-1.09777;-1.09777;-0.719655;-0.699289;-0.63117;-0.321179;-0.321179;-0.25306;0.0569321;0.145417;0.145417;0.523527;0.523527;0.922004;0.990123;1.30011;1.76671;
+-1.94247;-1.56436;-1.47588;-1.09776;-1.09773;-0.71944;-0.699269;-0.631124;-0.320998;-0.320565;-0.251024;0.0599393;0.145783;0.147727;0.528177;
 
 			[-1;3] Sector;
 dim =4
-Ultraviolet Cut-off Energy (non scaled): 2.70505
+Ultraviolet Cut-off Energy (non scaled): 0.541011
 Number of Basis bellow the ultraviolet cut-off Energy: 4
 Eigen values (Non scaled): 
 -1.09777;-0.321179;0.145417;0.523527;
 
 			[0;0] Sector;
-dim =20
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 20
+dim =18
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 14
 Eigen values (Non scaled): 
--2.33789;-1.87129;-1.49318;-1.4047;-1.09471;-1.02659;-0.716595;-0.648476;-0.628111;-0.25;-0.25;0.128111;0.148476;0.216595;0.526587;0.594706;0.904698;0.993182;1.37129;1.83789;
+-2.33789;-1.87129;-1.49318;-1.4047;-1.0947;-1.02655;-0.716573;-0.648355;-0.628045;-0.249909;-0.247296;0.139415;0.149933;0.217254;
 
 			[0;2] Sector;
-dim =15
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 15
+dim =14
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 12
 Eigen values (Non scaled): 
--1.87129;-1.49318;-1.09471;-1.02659;-0.716595;-0.628111;-0.25;-0.25;-0.25;0.128111;0.216595;0.526587;0.594706;0.993182;1.37129;
+-1.87129;-1.49318;-1.0947;-1.02657;-0.716505;-0.628101;-0.25;-0.25;-0.248341;0.131259;0.217273;0.535303;
 
 			[0;4] Sector;
 dim =1
-Ultraviolet Cut-off Energy (non scaled): 2.70505
+Ultraviolet Cut-off Energy (non scaled): 0.541011
 Number of Basis bellow the ultraviolet cut-off Energy: 1
 Eigen values (Non scaled): 
 -0.25;
 
 			[1;1] Sector;
-dim =20
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 20
+dim =19
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 15
 Eigen values (Non scaled): 
--2.26671;-1.80011;-1.49012;-1.422;-1.02353;-1.02353;-0.645417;-0.645417;-0.556932;-0.24694;-0.178821;-0.178821;0.13117;0.199289;0.219655;0.597766;0.597766;0.975876;1.06436;1.44247;
+-2.26671;-1.80011;-1.49012;-1.422;-1.02353;-1.0235;-0.645417;-0.645317;-0.556923;-0.246275;-0.178821;-0.178157;0.134019;0.200182;0.22021;
 
 			[1;3] Sector;
 dim =4
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 4
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 3
 Eigen values (Non scaled): 
--1.02353;-0.645417;-0.178821;0.597766;
+-1.02353;-0.645417;-0.178821;
 
 			[2;0] Sector;
 dim =10
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 10
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 8
 Eigen values (Non scaled): 
--2.19553;-1.41894;-0.952349;-0.642357;-0.574238;-0.175762;0.202349;0.290834;0.668944;1.04705;
+-2.19553;-1.41894;-0.952349;-0.642357;-0.574238;-0.175762;0.202349;0.290834;
 
 			[2;2] Sector;
 dim =6
-Ultraviolet Cut-off Energy (non scaled): 2.70505
-Number of Basis bellow the ultraviolet cut-off Energy: 6
+Ultraviolet Cut-off Energy (non scaled): 0.541011
+Number of Basis bellow the ultraviolet cut-off Energy: 5
 Eigen values (Non scaled): 
--1.41894;-0.952349;-0.574238;-0.175762;0.202349;0.668944;
+-1.41894;-0.952349;-0.574238;-0.175762;0.202349;
 
 			[3;1] Sector;
 dim =4
-Ultraviolet Cut-off Energy (non scaled): 2.70505
+Ultraviolet Cut-off Energy (non scaled): 0.541011
 Number of Basis bellow the ultraviolet cut-off Energy: 4
 Eigen values (Non scaled): 
 -1.34777;-0.571179;-0.104583;0.273527;
 
 			[4;0] Sector;
 dim =1
-Ultraviolet Cut-off Energy (non scaled): 2.70505
+Ultraviolet Cut-off Energy (non scaled): 0.541011
 Number of Basis bellow the ultraviolet cut-off Energy: 1
 Eigen values (Non scaled): 
 -0.5;
 
 Diagonalization process already finished for 'Left Side' N = 2!
-
-
-
-Done! Iteraction 2 complete!
-
-
 
