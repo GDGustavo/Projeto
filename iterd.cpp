@@ -194,7 +194,7 @@ for (int q=0; q < nq; q++) {
 				for (int j=0; j<dim; j++) {
 					long k =i*dim +j;
 					eigen_vect_write(q,ds,k,eigen_vectors[i][j]);		// Saving the eigenvectors
-				//	std::cout << eigen_vectors[i][j]<< ";" <<'\t';
+					//std::cout << eigen_vectors[i][j]<< ";" <<'\t';
 				}
 				//std::cout << std::endl;
 				delete[] eigen_vectors[i];	
@@ -253,8 +253,8 @@ for(int q=0;q<(nq-1);q++){
 							int g2 = genre(q+1,ds+1,p2+1);		// What is the genre p2?
 							if ((g1==0)&&(g2==1)){term = 1;}
 							if ((g1==3)&&(g2==2)){term = sqrt(ds+1)/sqrt(ds+2);}
-							double aux2 = eigen_vect_read(q+1,ds+1,(long) r2*dim2 +p2);
-							double aux1 = eigen_vect_read(q,ds, (long) r1*dim +p1);
+							  double aux2 = eigen_vect_read(q+1,ds+1,(long) r2*dim2 +p2);
+							  double aux1 = eigen_vect_read(q,ds, (long) r1*dim +p1);
 							sum = sum + term*aux2*aux1;
 						}
 					}
@@ -283,8 +283,8 @@ for(int q=0;q<(nq-1);q++){
 							int g2 = genre(q+1,ds-1,p2+1);		// What is the genre p2?
 							if ((g1==0)&&(g2==3)){ term = 1;}
 							if ((g1==1)&&(g2==2)){term = -sqrt(ds+1)/sqrt(ds);}
-							double aux2 = eigen_vect_read(q+1,ds-1,(long) r2*dim2 +p2);
-							double aux1 = eigen_vect_read(q,ds,(long) r1*dim +p1);
+							  double aux2 = eigen_vect_read(q+1,ds-1,(long) r2*dim2 +p2);
+							  double aux1 = eigen_vect_read(q,ds,(long) r1*dim +p1);
 							sum = sum + term*aux2*aux1;	
 						}
 					}

@@ -9,7 +9,8 @@ static double E_d_ = 0.0; //
 static double E_uv_ = 0.0; //  
 static double W_1_ = 0.0; // 
 static double W_2_ = 0.0; // 
-static double V_0_ = 0.0; // 
+static double V_0_ = 0.0; //
+static double D_ = 0.0; //  
 
 double  read_param(std::string var){
 
@@ -129,10 +130,13 @@ std::cout << "Gamma = "<< Gamma_ << std::endl;
 z_m_ = read_param("z_m");
 std::cout << "z_m = "<< z_m_ << std::endl;
 
+D_ = read_param("D_b");
+std::cout << "D_b_ = "<< D_ << std::endl;
+
 U_ = read_param("U");
 std::cout << "U = "<< U_ << std::endl;
 
-N_max_ = static_cast<int>(read_param("N_max"));
+N_max_ = (int) static_cast<int>(read_param("N_max"));
 std::cout << "N_max = "<< N_max_ << std::endl;
 
 E_d_ = read_param("E_d");
@@ -175,10 +179,17 @@ double update_Gamma(double new_value)
      return Gamma_;
 }
 
+//D_b
+double D(){
+
+	return D_;
+}
+
+
 //U
 double U()
 {
-      return U_;
+      	return U_;
 }
 
 //z_m
@@ -196,11 +207,7 @@ double update_z_m(double new_value)
 //N
 int fN_max()
 {
-	return N_max_;
-}
-
-int update_N_max(int new_value){
-	N_max_ = new_value;
+	N_max_ = (int) static_cast<int>(read_param("N_max"));
 	return N_max_;
 }
 

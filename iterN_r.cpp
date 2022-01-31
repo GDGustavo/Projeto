@@ -165,7 +165,7 @@ for(int i=0; i< nq; i++){
 Populate_N_R(N, dimen_p_);
 double lamb_ = lamb();								    // It's reading Lambda from parameters.txt.
 double aux1 = (1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_, (float) -2*(N-1)-3)));
-double D_N  = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
+double D_N  = D()*(1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
 double t_N  = aux1;								    // It's calculating the coupling t_(N-1).
 std::cout << "t_{N-1}/D_N= "<< t_N <<std::endl;
 
@@ -261,6 +261,7 @@ for (int q=0; q < nq; q++) {
 					eigen_vectors[k][h] = 0;
 				}
 			}
+			
 			int ret = dimen_[q][ds];						// Number of states bellow cut-off.
 			givens(dim, ret , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solving the H
 			delete[] Hamiltonian;
@@ -277,12 +278,14 @@ for (int q=0; q < nq; q++) {
 			delete[] eigen_values;
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i< ret; i++) {
-				for (int j=0; j<dim; j++) { 
-			//		std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
-					eigen2_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
+			for (int i=0; i< dim; i++) {
+				for (int j=0; j<dim; j++) {
+					if(i < ret){  
+						//std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
+						eigen2_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
+					}				
 				}
-			//	std::cout << std::endl;
+				//std::cout << std::endl;
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
@@ -297,6 +300,8 @@ HN_ = NULL;
 
 std::cout << "Diagonalization process already finished for 'Right Side' N = "<< N<<"!" << std::endl<< std::endl<< std::endl<< std::endl;
 
+
+if(N < fN_max()){
 
 mel2_start(N);
 
@@ -325,8 +330,8 @@ for(int q=0;q<(nq-1);q++){
 						if (l2==l1){				// delta(l1,l2)
 							int r2 = k/dim;      		// line
 							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
+							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24+p2);
+							double aux1=eigen2_vect_read(q,ds,(long)r1*N14+p1);
 							sum = sum + aux2*aux1;
 						}
 					}  						
@@ -397,6 +402,8 @@ for(int q=0;q<(nq-1);q++){
 
 } //end for q
 
+} // end if N < N_max
+
 // Projetcions Beteween the "Right" and "Left" sectors. 
 
 save_projection(N-1, dimen_p_);         // Save the past projection matrix 
@@ -462,13 +469,13 @@ for(int q=0; q<nq; q++){
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
-				if(abs(sum) < 0.0000000001){
+				if(abs(sum) < 0.000001){
 					sum = 0;
 				}
-				else{
-					std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-					std::cout << sum << std::endl;
-				}
+				else{ if (r_L == r_R){
+					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
+				 	  std::cout << sum << std::endl;
+				}}
 				projection_write(q,ds,k,sum);
 			} // end for k
 		} // end if dim > 0

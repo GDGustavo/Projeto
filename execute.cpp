@@ -6,14 +6,16 @@
 #include "mel.h" 
 #include "mel_2.h"
 #include "proj.h"
+#include "param.h"
 #include <time.h> 
 
-int N_max = 3;								// Maximum number of iterations;
+int N_max = fN_max();							// Maximum number of iterations;
 static int **dimen_p;							// Number of basis on the (Q,S)_{N-1} sector.
 static int **dimen;							// Number of basis on the (Q,S)_N sector.
 int main(){
 time_t beg_time = time(NULL);
 
+std::cout << N_max << std::endl;
 
 std::cout << "Starting the NRG code..." << std::endl<< std::endl;
 std::cout << std::endl;	
@@ -35,7 +37,7 @@ for(int i=0; i< nq; i++){
 }
 
 iter0_l(W1, dimen_p); 								// Initial condictions for "Left Side" N = 0;
-iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
+//iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
 
 //  Matrix |Q' dS' r'|f_N^+|Q dS r|: N = 0;
 //  Eigenvalues: |Q dS r|H_N|Q dS r|: N = 0;
@@ -58,7 +60,7 @@ for(int ni = 1; ni <= N_max; ni ++){
 	}
 
 	iterN_L(ni, dimen_p, dimen);						// Solve the 'Left Side' hamiltonian for N=ni
-	iterN_R(ni, dimen_p, dimen);						// Solve the 'Right Side' hamiltonian for N=ni
+//	iterN_R(ni, dimen_p, dimen);						// Solve the 'Right Side' hamiltonian for N=ni
 
 	nq = 2*(ni-1+2)+1; 							// Delete the dimen_L_p matrix. 
 	for (int q = 0; q < nq; q++){

@@ -56,7 +56,7 @@ void iter0_r(double W){
 int nq = 2*(2+0)+1; // charge: {-2,-1, 0, 1, 2} => {0,1,2,3,4}
 int ns = (0+2)+1;  // double spin: {0, 1 2} => {0,1,2}
 double lamb_ = lamb();
-double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
+double D_0   = D()*(1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
 
 
 // Creating the Basis and Making all matrix elements zero.

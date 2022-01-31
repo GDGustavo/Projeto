@@ -275,32 +275,32 @@ for(int q = 0; q < nq; q++){
 					long k = (p2*(p2+1)/2) + p1; 			// Memory address starting in k=0;
 					HN_[q][ds][k] = 0; 
 					if ((g1==g2)&&(q1==q2)&&(r1==r2)&&(ds1==ds2)){			// Diagonal terms.
-					//HN_[q][ds][k]= eigen_erg_read(q1,ds1,(long) r1-1);
-					HN_[q][ds][k]= sqrt(lamb_)*eigen_erg_read(q1,ds1,(long) r1-1);  	// Att, scaled H
+					  //HN_[q][ds][k]= eigen_erg_read(q1,ds1,(long) r1-1);
+					  HN_[q][ds][k]= sqrt(lamb_)*eigen_erg_read(q1,ds1,(long) r1-1);  	// Att, scaled H
 					}
 					if ((g2==0)&&(g1==1)){						// SE terms.
-					HN_[q][ds][k] = t_N*mel_ne_read(q1,ds1,k_mel_1);
+					  HN_[q][ds][k] = t_N*mel_ne_read(q1,ds1,k_mel_1);
 					}
 					if ((g2==1)&&(g1==0)){						// ES terms. 
-					HN_[q][ds][k] = t_N*mel_ne_read(q2,ds2,k_mel_2);
+					  HN_[q][ds][k] = t_N*mel_ne_read(q2,ds2,k_mel_2);
 					}					
 					if ((g2==1)&&(g1==2)){						// EN terms. 
-					HN_[q][ds][k]=(sqrt(ds)/sqrt(ds+1))*t_N*mel_nw_read(q1,ds1,k_mel_1);
+					  HN_[q][ds][k]=(sqrt(ds)/sqrt(ds+1))*t_N*mel_nw_read(q1,ds1,k_mel_1);
 					}		
 					if ((g2==2)&&(g1==1)){						// NE terms. 
-					HN_[q][ds][k]=(sqrt(ds)/sqrt(ds+1))*t_N*mel_nw_read(q2,ds2,k_mel_2);
+					  HN_[q][ds][k]=(sqrt(ds)/sqrt(ds+1))*t_N*mel_nw_read(q2,ds2,k_mel_2);
 					}								
 					if ((g2==0)&&(g1==3)){						// SW terms. 
-					HN_[q][ds][k]= t_N*mel_nw_read(q1,ds1,k_mel_1);
+					  HN_[q][ds][k]= t_N*mel_nw_read(q1,ds1,k_mel_1);
 					}	
 					if ((g2==3)&&(g1==0)){						// WS terms. 
-					HN_[q][ds][k]=t_N*mel_nw_read(q2,ds2,k_mel_2);
+					  HN_[q][ds][k]=t_N*mel_nw_read(q2,ds2,k_mel_2);
 					}				
 					if ((g2==3)&&(g1==2)){						// WN terms. 
-					HN_[q][ds][k]=(-sqrt(ds+2)/sqrt(ds+1))*t_N*mel_ne_read(q1,ds1,k_mel_1);
+					  HN_[q][ds][k]=(-sqrt(ds+2)/sqrt(ds+1))*t_N*mel_ne_read(q1,ds1,k_mel_1);
 					}	
 					if ((g2==2)&&(g1==3)){						// NW terms. 
-					HN_[q][ds][k]=(-sqrt(ds+2)/sqrt(ds+1))*t_N*mel_ne_read(q2,ds2,k_mel_2);
+					  HN_[q][ds][k]=(-sqrt(ds+2)/sqrt(ds+1))*t_N*mel_ne_read(q2,ds2,k_mel_2);
 					}
 				} // end for p1		
 			} // end for p2			
@@ -326,37 +326,24 @@ for (int q=0; q < nq; q++) {
 			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
 			double *eigen_values = new double[dim];                        	// Matrix to find the E-Energies
 			double **eigen_vectors = new double*[dim];		               	// Matrix to find the E-Vectors
+			for (int k=0; k<dim; k++) {
+				eigen_vectors[k] = new double[dim];
+			}
 			long Nel_max = (1+dim)*dim/2;	                      		// Maximum number of elements of LTM
 			double* Hamiltonian  = new double[Nel_max];                     	// H[q,ds] to use in diagonalization
-			double* Hamiltonian_ = new double[Nel_max];                     	// H[q,ds] to use in diagonalization
 			for (long k=0; k<Nel_max; k++) {					// Save the values to diagolize
 				Hamiltonian[k] = HN_[q][ds][k];
-				Hamiltonian_[k]= HN_[q][ds][k]; 
 			}
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
-			for (int k=0; k<dim; k++) {					// Make all elements zero
-				eigen_values[k] = 0;
-				eigen_vectors[k] = new double[dim];
-				for(int h=0; h< dim; h++){
-					eigen_vectors[k][h] = 0;
-				}
-			}
-			eigen_values[0] = E_uv_;							// Cut-off Energy
-			int ret = givens(dim, 0 , Hamiltonian_ , eigen_values, eigen_vectors, 0);	// Find the Cut-off dim
-			delete[] Hamiltonian_;
 
-			for (int k=0; k<dim; k++) {						// Make all elements zero
-				eigen_values[k] = 0;
-				for(int h=0; h< dim; h++){
-					eigen_vectors[k][h] = 0;
-				}
-			}
+			eigen_values[0] = E_uv_;							// Cut-off Energy
+			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solve the hamiltonian
 			int dim_c = abs(ret);							// Dim bellow  the cut-off
-			givens(dim, dim_c , Hamiltonian , eigen_values, eigen_vectors, 0);		// Solve the H with cut-off
-			delete[] Hamiltonian;
-			Hamiltonian = NULL;						
 			dimen_[q][ds] = dim_c;							// Save the Dim[q.ds]
 
+			delete[] Hamiltonian;
+			Hamiltonian = NULL;						
+			
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
 			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim);			// Alloc memory to save E-Vectors
 
@@ -370,12 +357,12 @@ for (int q=0; q < nq; q++) {
 			delete[] eigen_values;
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i<dim_c; i++) {						// Line 0, 1... dim_cut_off
+			for (int i=0; i< dim_c; i++) {						// Line 0, 1... dim_cut_off
 				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
-			//		std::cout << eigen_vectors[i][j] << ";";
 					eigen_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
+					//std::cout << eigen_vectors[i][j] << ";";
 				}
-			//	std::cout << std::endl;
+				//std::cout << std::endl;
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
@@ -390,6 +377,7 @@ HN_ = NULL;
 
 std::cout << "Diagonalization process already finished for 'Left Side' N = "<< N<<"!" << std::endl<< std::endl<< std::endl<< std::endl;
 
+if (N < fN_max()){
 
 mel_start(N);
 
@@ -411,31 +399,23 @@ for(int q=0;q<(nq-1);q++){
 			mel_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
-					for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
-						int l1 = p1;
-						int l2 = p2 - N21;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
-							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum + aux2*aux1;
-						}
-					}  						
+				int r2 = k/dim;      						// line
+				int r1 = k - r2*dim; 						// Collum
+				for(int p1=0; p1<N11; p1++){ 			// g1(p1) = 0;	// g2(p2) = 1;
+					int p2 = p1 + N21;
+					if (p2<N22){						// delta(l1,l2)
+						double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+						double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += aux2*aux1;
+					}						
 				}
-				for(int p1=N13; p1< N14; p1++){ 				// g1(p1) = 3;
-					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = p1 - N13;
-						int l2 = p2 - N22;
-						if (l1==l2){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
-							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
-						}
-					}  					
+				for(int p1=N13; p1< N14; p1++){ 			// g1(p1) = 3;	// g2(p2) = 2;	
+					int p2 = (p1 - N13) + N22;					// delta(l1,l2)
+					if (p2<N23){				
+						double aux2=eigen_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+						double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
+					}					
 				}
 				mel_ne_write(q,ds,k,sum);
 			} //end for k
@@ -457,30 +437,22 @@ for(int q=0;q<(nq-1);q++){
 			mel_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
-					for(int p2=N23; p2< N24; p2++){			// g2(p2) = 3;
-						int l1 = p1;
-						int l2 = p2 - N23;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
-							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum + aux2*aux1;
-						}
-					}  						
+				int r2 = k/dim;      						// line
+				int r1 = k - r2*dim; 						// Collum
+				for(int p1=0; p1<N11; p1++){ 			// g1(p1) = 0;	// g2(p2) = 3;
+					int p2 = p1 + N23; 					// delta(l1,l2)	
+					if (p2<N24){				
+						double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+						double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += aux2*aux1;
+					}					
 				}
-				for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
-					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = p1 - N11;
-						int l2 = p2 - N22;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
-							double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
-						}
+				for(int p1=N11; p1< N12; p1++){ 			// g1(p1) = 1;	// g2(p2) = 2;
+					int p2 = (p1 - N11) + N22;					// delta(l1,l2)
+					if (p2<N23){				
+						double aux2=eigen_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+						double aux1=eigen_vect_read(q,ds,(long)r1*N14 +p1);
+						sum -= sqrt(ds+1)/sqrt(ds)*aux2*aux1;
 					}  						
 				}
 				mel_nw_write(q,ds,k,sum);
@@ -489,6 +461,8 @@ for(int q=0;q<(nq-1);q++){
 	} //end for ds
 
 } //end for q
+
+} // end if N < N_max;
 
 for (int q = 0; q < nq; q++){
 	delete[] NS_[q];

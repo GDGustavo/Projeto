@@ -25,3 +25,4 @@ double V_0();
 double E_uv();
 double W_1();
 double W_2(); 
+double D();

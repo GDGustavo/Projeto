@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include "libvec.h"
 #include "giv0.h"
 #define ETA DBL_EPSILON
 #define THETA DBL_MAX
@@ -10,14 +11,14 @@
 #define SQRE(x) (x) * (x)
 #define SIGN(x, y) ( ((y) >= 0) ? (x) : -(x) )
 #define MIN(x, y) ( ((x) <= (y)) ? (x) : (y) )
-#define MAXITER 40
+#define MAXITER 30
 #define ONE 1
 
 int idif;
 double fact;
 
 
-int number_below(double cut_off, double *root, int n)
+int number_below(double cut_off, double const* root, int n)
 				/* counts eigenvalues below cut_off. */
 				/* introduced on August 12, 1993 */
 {
@@ -48,7 +49,7 @@ int rtcomp(double **proot1, double **proot2)
     return 0;
 }
 
-void vecopy(double dest[], double sourc[], int n)
+void vecopy(double dest[], double const sourc[], int n)
      /********************************************************************
       *
       *	function vecopy
@@ -72,7 +73,7 @@ void vecopy(double dest[], double sourc[], int n)
 int allocg(double **a, int n, int dim)
 {
   while(n >= 0){
-    if( (a[n] = (double*)calloc(dim, sizeof(double)) ) == NULL){
+    if( (a[n] = (double*)calloc(dim, sizeof(double)) ) == nullptr){
       printf("\nInsufficient memory to allocm\n");
       return -1;
     }
@@ -94,7 +95,7 @@ int alloci(int **a, int n, int dim)
   int i;
   
   while(n >= 0){
-    if( (a[n] = (int*)malloc(ISIZE(dim)) ) == NULL){
+    if( (a[n] = (int*)malloc(ISIZE(dim)) ) == nullptr){
       printf("\nInsufficient memory for allocm\n");
       return -1;
     }
@@ -140,7 +141,7 @@ void sort(int n, int nroot, double *root, double *vect[])
       *		written by	L.N.Oliveira
       ***********************************************************************/
 {
-  int i;
+    int i;
   
 				/* following loop copies eigenvalues */
 				/* into matrix vect	*/
@@ -156,23 +157,18 @@ void sort(int n, int nroot, double *root, double *vect[])
 				/* copy sorted eigenvalues back into root */
   for(i = 1; i <= nroot; i++)
     root[i] = *vect[i];
-  
-  
-  return;
 }
 
 int norm_a(int n, int nsize, int nroot, double *anormp,
 		 double *tracep, double *a, double *root, double *vect[])
 {
   int i, j;
-  int nm1, nm2, np1, jump = 1;
+  int jump = 1;
   double floatn, factor = 0.0;
   double scale;
   
   floatn = (double)n;
-  nm1=n-1;
-  nm2=n-2;
-  np1=n+1;
+  int np1=n+1;
   
   for(j=2; j<=np1; j++){
     *tracep += a[jump];
@@ -230,9 +226,9 @@ void rstroot(double anorm, int n, double trace, double *root)
   while(n);
 }
 
-double dsum(double *b, double *a, int ip1, int limit)
+double dsum(double const*b, double const*a, int ip1, int limit)
 {
-  int ii = ip1 -1;
+   int ii = ip1 -1;
   double dsumc=0.0;
   
   while(ii < limit){
@@ -296,7 +292,7 @@ double inivec(int i, int n, double *b[], double *vect[],
 		 double delta, double delbig, double temp)
 				// returns temp, used in bkiter
 				// bug caught 13 Jan 94
-{	
+{
   int k, l;
   double ret = temp;
   double elim1;
@@ -323,7 +319,7 @@ double inivec(int i, int n, double *b[], double *vect[],
   return ret;
 }
 
-void bkiter(int n, int nroot, double *a, double *b[], double *root,
+void bkiter(int n, int nroot, double const* a, double *b[], double const* root,
 	    double *vect[], double delta, double delbig,
 	    double del1, double theta1)
 {	
@@ -407,7 +403,7 @@ void bkiter(int n, int nroot, double *a, double *b[], double *root,
   }
 }
 
-int qrit(int *nx, int *ni, int *k, double *a, double *b, double *sh,
+int qrit(int const*nx, int const*ni, int *k, double *a, double *b, double *sh,
 		double tol, int m, int ntop)
 {
   int i;
@@ -483,7 +479,7 @@ int qrit(int *nx, int *ni, int *k, double *a, double *b, double *sh,
   return 0;
 }
 
-int swtch1(int *nx, int *k, double *a, double *sh)
+int swtch1(int *nx, int *k, double *a, double const*sh)
 {
   
   a[(*nx)--]+=*sh;
@@ -491,7 +487,7 @@ int swtch1(int *nx, int *k, double *a, double *sh)
   return 0;
 }
 
-int swtch2(int *nx, int *k, double *a, double *b, double *sh,
+int swtch2(int *nx, int *k, double *a, double *b, double const*sh,
 	   double small)
 {
   double
@@ -613,7 +609,7 @@ int evqr(double *a, double *b, int n, int m, double small)
   }
 }
 
-void size_2(double *a, double *b, double *v[], int *pn, double *psh,
+void size_2(double *a, double *b, double *v[], int *pn, double const*psh,
 	    double *pst, int nnm1, int njx, double small)
 {
   double
@@ -725,7 +721,7 @@ int gage_b(int n, int ni, double *b, int *ptiny, double tol)
   return n;
 }
 
-int qrtn(double *a, double *b, double *v[], double *eig, int n, int m,
+int qrtn(double *a, double *b, double *v[], double const*eig, int n, int m,
      double tol, double small, int njx)
      
 {	
@@ -785,8 +781,8 @@ int qrtn(double *a, double *b, double *v[], double *eig, int n, int m,
   }
 }
 
-void simvec(int nsize, int n, int nroot, double *a, double *b[],
-		 int *b6, double *vect[])
+void simvec(int nsize, int n, int nroot, double const* a, double *b[],
+		 int const*b6, double *vect[])
 {	
   int jump, limit, j1;
   int k, im;
@@ -1029,10 +1025,9 @@ int giv1(int n, int nrootx, int njx, double *a, double *root,
     tolsc =  toler / anorm;
     for(i = 1; i<=ntop; i++){
       if( fabs( root[i+1]-root[i] )<= tolsc ){
-	degenerate = 1;
-	break;
+	      degenerate = 1;
+	      break;
       }
-      
     }
   }
   
@@ -1048,7 +1043,7 @@ int giv1(int n, int nrootx, int njx, double *a, double *root,
     
     for(i = 1; i<=n; i++)
       for(j  =  1; j <= n; j++)
-	vect[i][j] = (i == j ? 1. : 0.); /* eigenvectors zeroed */
+	      vect[i][j] = (i == j ? 1. : 0.); /* eigenvectors zeroed */
     /* bug caught 2 April '93*/
     
     if( qrtn(root, b[3], vect, b[2], n, 25, emag, small, njx) )
@@ -1076,7 +1071,7 @@ int giv1(int n, int nrootx, int njx, double *a, double *root,
   return ret;
 }
 
-#define END -7.7e77
+#define END (-7.7e77)
 #define TOLER 1.e-4
 
 void cpy(int dim, double *c, double *a)
@@ -1102,7 +1097,7 @@ void cpy(int dim, double *c, double *a)
 #endif // _INCLUDE_HPUX_SOURCE
 }
 
-int check(int n, double *a, double *c, double *root, double *vect[],
+int check(int n, double *a, double *c, double const*root, double *vect[],
       int nroot, int chk)
      /****************************************************************
       *	function check						*
@@ -1137,7 +1132,7 @@ int check(int n, double *a, double *c, double *root, double *vect[],
   double *pvecti;		/* pointers to vect matrix */
   double *pvectj;
   double norm;			/* accumulates norm of eigenvector */
-  double dot_ij;		/* linaccumulates scalar product of two */
+  double dot_ij;		/* accumulates scalar product of two */
 				/* eigenvectors */
   double c_times_vect;		/* accumulates product matrix X eigenvector */
   double c_max;			/* maximum element in row i of matrix c */
@@ -1210,47 +1205,45 @@ int check(int n, double *a, double *c, double *root, double *vect[],
 }
 
 int givens(int dim, int nrootx, double *a, double *root, double **vect, int chk)
-// nrootx is the wanted number of eigenvectors. If no eigenvectors are
-// wanted, it should be negative. nrootx==0 means that a cut_off is
-// stored in root[0]. The number of eigenvalues below the cut_off
-// and only those many eigenvectors are returned.
+// nrootx indicates the wanted number of eigenvectors.
+// If no eigenvectors are wanted, nrootx should be <0; givens returns 0
+// nrootx==0 means that a cut_off is stored in root[0]; givens returns the number m of eigenvalues
+// below the cut_off and the corresponding eigenvectors are stored in vect[0],..., vect[m].
+// nrootx >0 means that nrootx eigenvectors are wanted; givens returns nrootx
 // givens adopts c-style indexing (i.e., vector indices run from 0
 // to n-1) as opposed to fortran style (vector indices from 1 to n) in giv1
 {
   double* a1 = a - 1;		// ensures that a1[1] == a[0]
   double* root1 = root - 1;
-  double ret = 0.0;
   double** vect1 = new double*[dim+1];
-  for(int ket = 1; ket <= dim; ket++){
+  for(int ket = 0; ket <= dim; ket++){
     vect1[ket] = new double [dim + 1]; // giv1 uses vect1[i][0] to store eigenvalue
   }
-  
-  if(!chk){
-    ret = giv1(dim, nrootx, dim, a1, root1, vect1);
-  }
-  else{
-    double* c = nullptr;
+  double *c;
+  if(chk){
     c = new double[dim*(dim+1)/2 + 1];
     check(dim, a1, c, root1, vect1, 0, 0);
-    ret = giv1(dim, nrootx, dim, a1, root1, vect1);
+  }
+  int ret = giv1(dim, nrootx, dim, a1, root1, vect1);
+
+  if(chk){
     if(check(dim, a1, c, root1, vect1, ret, 1) == -1)
       ret *= -1;		// check not OK
-    delete[] c;
   }
+  int n_vectors = nrootx;
+  if(nrootx == 0) n_vectors = ret;
+  else if(nrootx < 0) n_vectors = 0;
 
-  for(int ket = 0; ket < nrootx; ket++){
+  for(int ket = 0; ket < n_vectors; ket++){ /* condition ket < n_vectors substituted for ket < nrootx; bug caught
+ *                                     26 January 2022 */
     for(int bas = 0; bas < dim; bas++){
       vect[ket][bas] = vect1[ket+1][bas+1];
     }
-  }
-  for(int ket = 1; ket <= dim; ket++){
-    delete[] vect1[ket];
-    vect1[ket] = 0;
+    delete[] vect1[ket+1];
   }
   delete[] vect1;
-  vect1 = 0;
 
-  return ret;
+  return n_vectors;
 }
 
   
