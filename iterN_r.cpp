@@ -165,9 +165,8 @@ for(int i=0; i< nq; i++){
 Populate_N_R(N, dimen_p_);
 double lamb_ = lamb();								    // It's reading Lambda from parameters.txt.
 double aux1 = (1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_, (float) -2*(N-1)-3)));
-double D_N  = D()*(1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
+double D_N  = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
 double t_N  = aux1;								    // It's calculating the coupling t_(N-1).
-std::cout << "t_{N-1}/D_N= "<< t_N <<std::endl;
 
 // H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];
 
@@ -279,10 +278,19 @@ for (int q=0; q < nq; q++) {
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i< dim; i++) {
+				int signal = 1;
+				if (eigen_vectors[i][0] < 0){
+					signal = -1;
+				}
+				else{
+					if((eigen_vectors[i][0] == 0)&&(eigen_vectors[i][1]<0)){
+						signal = -1;						
+					}
+				}
 				for (int j=0; j<dim; j++) {
 					if(i < ret){  
 						//std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
-						eigen2_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
+						eigen2_vect_write(q,ds,(long) i*dim+j,(double) signal*eigen_vectors[i][j]); 
 					}				
 				}
 				//std::cout << std::endl;
@@ -323,31 +331,23 @@ for(int q=0;q<(nq-1);q++){
 			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
-					for(int p2=N21; p2<N22; p2++){			// g2(p2) = 1;
-						int l1 = p1;
-						int l2 = p2 - N21;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24+p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*N14+p1);
-							sum = sum + aux2*aux1;
-						}
-					}  						
+				int r2 = k/dim;      						// line
+				int r1 = k - r2*dim; 						// Collum
+				for(int p1=0; p1<N11; p1++){ 			// g1(p1) = 0;	// g2(p2) = 1;
+					int p2 = p1 + N21;
+					if (p2<N22){						// delta(l1,l2)
+						double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+						double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += aux2*aux1;
+					}						
 				}
-				for(int p1=N13; p1< N14; p1++){ 				// g1(p1) = 3;
-					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = p1 - N13;
-						int l2 = p2 - N22;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum + sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
-						}
-					}  						
+				for(int p1=N13; p1< N14; p1++){ 			// g1(p1) = 3;	// g2(p2) = 2;	
+					int p2 = (p1 - N13) + N22;					// delta(l1,l2)
+					if (p2<N23){				
+						double aux2=eigen2_vect_read(q+1,ds+1,(long)r2*N24 +p2);
+						double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += sqrt(ds+1)/sqrt(ds+2)*aux2*aux1;
+					}					
 				}
 				mel2_ne_write(q,ds,k,sum);
 			} //end for k
@@ -369,30 +369,22 @@ for(int q=0;q<(nq-1);q++){
 			mel2_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
-				for(int p1=0; p1<N11; p1++){ 				// g1(p1) = 0;
-					for(int p2=N23; p2< dim2; p2++){			// g2(p2) = 3;
-						int l1 = p1;
-						int l2 = p2 - N23;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum + aux2*aux1;
-						}
-					}  						
+				int r2 = k/dim;      						// line
+				int r1 = k - r2*dim; 						// Collum
+				for(int p1=0; p1<N11; p1++){ 			// g1(p1) = 0;	// g2(p2) = 3;
+					int p2 = p1 + N23; 					// delta(l1,l2)	
+					if (p2<N24){				
+						double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+						double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
+						sum += aux2*aux1;
+					}					
 				}
-				for(int p1=N11; p1< N12; p1++){ 				// g1(p1) = 1;
-					for(int p2=N22; p2<N23; p2++){			// g2(p2) = 2;
-						int l1 = p1 - N11;
-						int l2 = p2 - N22;
-						if (l2==l1){				// delta(l1,l2)
-							int r2 = k/dim;      		// line
-							int r1 = k - r2*dim; 		// Collum
-							double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
-							double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
-							sum = sum -sqrt(ds+1)/sqrt(ds)*aux2*aux1;
-						}
+				for(int p1=N11; p1< N12; p1++){ 			// g1(p1) = 1;	// g2(p2) = 2;
+					int p2 = (p1 - N11) + N22;					// delta(l1,l2)
+					if (p2<N23){				
+						double aux2=eigen2_vect_read(q+1,ds-1,(long)r2*N24 +p2);
+						double aux1=eigen2_vect_read(q,ds,(long)r1*N14 +p1);
+						sum -= sqrt(ds+1)/sqrt(ds)*aux2*aux1;
 					}  						
 				}
 				mel2_nw_write(q,ds,k,sum);
@@ -473,8 +465,8 @@ for(int q=0; q<nq; q++){
 					sum = 0;
 				}
 				else{ if (r_L == r_R){
-					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				 	  std::cout << sum << std::endl;
+					  //std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
+				 	  //std::cout << sum << std::endl;
 				}}
 				projection_write(q,ds,k,sum);
 			} // end for k

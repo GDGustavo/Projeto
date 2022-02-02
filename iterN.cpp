@@ -241,7 +241,7 @@ double t_N = aux; 									// Att, Scaled Hamiltonian.
 std::cout << "t_{N-1}/D_N= " << '\t' << t_N <<std::endl;
 std::cout << "D_N = "<< '\t' << '\t' << D_N <<std::endl;
 std::cout << "t_{N-1}= " << '\t' <<  t_N*D_N <<std::endl;
-std::cout << "E_uv_= " << '\t' <<  E_uv_ <<std::endl;
+std::cout << "Ultraviolet Cut-off Energy (non scaled): " << '\t' << D_N*E_uv_ << std::endl;
 
 
 // H_N[p',p] = H_{N-1}[p',p] + t_{N-1}*M_N[p',p] + t_{N-1}*M_N[p,p']; 			Non scaled Hamiltonian
@@ -339,6 +339,11 @@ for (int q=0; q < nq; q++) {
 			eigen_values[0] = E_uv_;							// Cut-off Energy
 			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solve the hamiltonian
 			int dim_c = abs(ret);							// Dim bellow  the cut-off
+			
+			//if(dim_c > 250){
+			//	dim_c = 250;
+			//} 
+
 			dimen_[q][ds] = dim_c;							// Save the Dim[q.ds]
 
 			delete[] Hamiltonian;
@@ -347,9 +352,10 @@ for (int q=0; q < nq; q++) {
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
 			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim);			// Alloc memory to save E-Vectors
 
-			std::cout << "Ultraviolet Cut-off Energy (non scaled): " << D_N*E_uv_ << std::endl;
 			std::cout << "Number of Basis bellow the ultraviolet cut-off Energy: " << ret << std::endl;	
-			std::cout << "Eigen values (Non scaled): " << std::endl;			
+			std::cout << "Eigen values (Non scaled): " << std::endl;
+			//std::cout << D_N*eigen_values[0] << ";";
+			
 			for (long k=0; k<dim_c; k++) {
 				eigen_erg_write(q,ds,k,eigen_values[k]);
 				std::cout << D_N*eigen_values[k] << ";";
@@ -357,10 +363,21 @@ for (int q=0; q < nq; q++) {
 			delete[] eigen_values;
 			eigen_values = NULL;
 			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i< dim_c; i++) {						// Line 0, 1... dim_cut_off
+			for (int i=0; i< dim; i++) {						// Line 0, 1... dim_cut_off
+				int signal = 1;
+				if (eigen_vectors[i][0] < 0){
+					signal = -1;
+				}
+				else{
+					if((eigen_vectors[i][0] == 0)&&(eigen_vectors[i][1]<0)){
+						signal = -1;						
+					}
+				}
 				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
-					eigen_vect_write(q,ds,(long) i*dim+j,eigen_vectors[i][j]); 
-					//std::cout << eigen_vectors[i][j] << ";";
+					if ( i < dim_c){
+						eigen_vect_write(q,ds,(long) i*dim+j, (double) signal*eigen_vectors[i][j]); 
+						//std::cout << eigen_vectors[i][j] << ";";
+					}
 				}
 				//std::cout << std::endl;
 				delete[] eigen_vectors[i];

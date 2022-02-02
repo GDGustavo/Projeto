@@ -1231,16 +1231,20 @@ int givens(int dim, int nrootx, double *a, double *root, double **vect, int chk)
       ret *= -1;		// check not OK
   }
   int n_vectors = nrootx;
-  if(nrootx == 0) n_vectors = ret;
+  if(nrootx == 0) n_vectors = abs(ret);
   else if(nrootx < 0) n_vectors = 0;
+  
+  delete[] vect1[0];
 
-  for(int ket = 0; ket < n_vectors; ket++){ /* condition ket < n_vectors substituted for ket < nrootx; bug caught
- *                                     26 January 2022 */
+  for(int ket = 0; ket < n_vectors; ket++){ /* condition ket < n_vectors substituted for ket < nrootx; bug caught *26 January 2022 */
     for(int bas = 0; bas < dim; bas++){
       vect[ket][bas] = vect1[ket+1][bas+1];
     }
     delete[] vect1[ket+1];
   }
+  for(int ket = n_vectors; ket < dim;  ket++){
+    delete[] vect1[ket +1];	
+  } 
   delete[] vect1;
 
   return n_vectors;
