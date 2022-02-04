@@ -57,6 +57,7 @@ int nq = 2*(2+0)+1; // charge: {-2,-1, 0, 1, 2} => {0,1,2,3,4}
 int ns = (0+2)+1;  // double spin: {0, 1 2} => {0,1,2}
 double lamb_ = lamb();
 double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
+double E_f   = 200;
 
 
 // Creating the Basis and Making all matrix elements zero.
@@ -138,46 +139,39 @@ for (int q=0; q < nq; q++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 		dimen_[q][ds] = dim;
 		if(dim > 0) {
-			std::cout <<'\t'<< "N=0" <<'\t'<<'\t' << "["<< (q - 2) << ";" << ds;
-			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
 			eigen2_erg_alloc_memory(q,ds,(long) dim);
 			eigen2_vect_alloc_memory(q,ds,(long) dim*dim);
-			double *eigen_values = new double[dim];	            		// Changing the size
-			double **eigen_vectors = new double*[dim];	  			// Changing the size
+			double *eigen_values = new double[dim];	            		// 
+			double **eigen_vectors = new double*[dim];	  			// 
+			for (int k=0; k<dim; k++) {					// 
+				eigen_vectors[k] = new double[dim];
+			}
 			int Nel_max = (1+dim)*dim/2;                                		// Maximum number of elements in LTM
 			double *Hamiltonian = new double[Nel_max];             		// Change the size
 			for (int k=0; k<Nel_max; k++) {					// Saving the values to diagolize
 				Hamiltonian[k]= H0_[q][ds][k]/D_0;
 			}
 			delete[] H0_[q][ds];
-			for (int k=0; k<dim; k++) {					// Making all elements zero
-				eigen_values[k] = 0;
-				eigen_vectors[k] = new double[dim];
-				for(int h=0; h< dim; h++){
-					eigen_vectors[k][h] = 0;
-				}
-			}
+			
 			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 0); 		// Solving the H
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
-			std::cout << "Eigen values: " << std::endl << '\t';
+			
 			for (long k=0; k<dim; k++) {
 				eigen2_erg_write(q,ds,k,eigen_values[k]);	        			// Saving the eigenvalues 
-				std::cout << D_0*eigen_values[k] << "; ";          
+				if (E_f > eigen_values[k]){
+					E_f = eigen_values[k];
+				}
 			}
 			delete[] eigen_values;
 			eigen_values = NULL; 
-			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+
 			for (int i=0; i<dim; i++) {
-				std::cout << '\t';
 				for (int j=0; j<dim; j++) { 
 					eigen2_vect_write(q,ds,(long)(i*dim +j),eigen_vectors[i][j]);	// Saving the eigenvectors
-				//	std::cout << eigen_vectors[i][j]<< ";" <<'\t';
 				}
-				//std::cout << std::endl;
 				delete[] eigen_vectors[i];	
 			}
-			std::cout << std::endl;
 			delete[] eigen_vectors;
 			eigen_vectors = NULL;
 		}// end if dim>0
@@ -187,9 +181,40 @@ for (int q=0; q < nq; q++) {
 delete[] H0_;
 H0_ = NULL;
 
-mel2_start(0);									// Starting the Matrix |Q' S' r'|f_N^+|Q S r|
+// Printing the eigen energies and eigen vectors
+std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		if(dim > 0) {
+			std::cout << "["<< (q - 2) << ";" << ds;
+			std::cout << "] Sector"<<'\t'<<"dim ="<< dim << std::endl;
+			std::cout << "Eigen values (Non Scaled): " << std::endl;
 
-std::cout << "Diagonalization process already finished for 'Right' N = 0!" << std::endl<< std::endl<< std::endl<< std::endl;
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen2_erg_read(q,ds,k) - E_f;
+				eigen2_erg_write(q,ds,k,Energy);	        	
+				std::cout << D_0*Energy << ";";          
+			}
+
+			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+			for (int i=0; i<dim; i++) {
+				std::cout << '\t';
+				for (int j=0; j<dim; j++) {
+					long k =i*dim +j;
+					double vector = eigen2_vect_read(q,ds,k);
+					std::cout << vector << ";" <<'\t';
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl<< std::endl<< std::endl;
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
+
+
+mel2_start(0);									// Starting the Matrix |Q' S' r'|f_N^+|Q S r|
 
 //|Q+1 dS+1 r2|(f0^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS+1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS+1 p2|(f0^+)|Q dS p1|
 for(int q=0;q<(nq-1);q++){
@@ -253,7 +278,7 @@ for(int q=0;q<(nq-1);q++){
 
 // Projetcions Beteween the "Right" and "Left" sectors. 
 
-std::cout <<"Bases Projection for 'Right Side' N = 0;" << std::endl << std::endl;
+std::cout <<"Bases Projection for N = 0;" << std::endl << std::endl;
 
 projection_start(0);
 

@@ -232,14 +232,14 @@ for(int i=0; i< nq; i++){
 
 Populate_N(N, dimen_p_);
 double lamb_ = lamb();								    	// Reading Lambda from parameters.txt.
-double E_uv_ = (double) E_uv();
-double aux = (1-pow(lamb_, (float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_,(float) -2*(N-1)-3)));	
-double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_);		//
-//double t_N = aux*D_N;									// Calculating the coupling t_(N-1).
-double t_N = aux; 									// Att, Scaled Hamiltonian.
+double E_uv_ = (double) E_uv();								// Cut-Off Energy
+double aux =(1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_,(float) -2*(N-1)-1))*(1-pow(lamb_,(float) -2*(N-1)-3)));	
+double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_);		// D_N
+double t_N = aux; 									// Calculating the coupling t_(N-1).
+double E_f = (double) E_uv();								// Fundamental Energy
 
-std::cout << "t_{N-1}/D_N= " << '\t' << t_N <<std::endl;
 std::cout << "D_N = "<< '\t' << '\t' << D_N <<std::endl;
+std::cout << "t_{N-1}/D_N= " << '\t' << t_N <<std::endl;
 std::cout << "t_{N-1}= " << '\t' <<  t_N*D_N <<std::endl;
 std::cout << "Ultraviolet Cut-off Energy (non scaled): " << '\t' << D_N*E_uv_ << std::endl;
 
@@ -275,7 +275,6 @@ for(int q = 0; q < nq; q++){
 					long k = (p2*(p2+1)/2) + p1; 			// Memory address starting in k=0;
 					HN_[q][ds][k] = 0; 
 					if ((g1==g2)&&(q1==q2)&&(r1==r2)&&(ds1==ds2)){			// Diagonal terms.
-					  //HN_[q][ds][k]= eigen_erg_read(q1,ds1,(long) r1-1);
 					  HN_[q][ds][k]= sqrt(lamb_)*eigen_erg_read(q1,ds1,(long) r1-1);  	// Att, scaled H
 					}
 					if ((g2==0)&&(g1==1)){						// SE terms.
@@ -322,8 +321,6 @@ for (int q=0; q < nq; q++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 		dimen_[q][ds] = dim;
 		if(dim > 0) {
-			std::cout <<'\t'<<'\t'<<'\t' << "["<< (q - N - 2) << ";" << ds;
-			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
 			double *eigen_values = new double[dim];                        	// Matrix to find the E-Energies
 			double **eigen_vectors = new double*[dim];		               	// Matrix to find the E-Vectors
 			for (int k=0; k<dim; k++) {
@@ -336,15 +333,11 @@ for (int q=0; q < nq; q++) {
 			}
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
 
-			eigen_values[0] = E_uv_;							// Cut-off Energy
-			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solve the hamiltonian
-			int dim_c = abs(ret);							// Dim bellow  the cut-off
-			
-			//if(dim_c > 250){
-			//	dim_c = 250;
-			//} 
+			eigen_values[0] = E_uv_;						// Cut-off Energy
+			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);// Solve the hamiltonian
+			int dim_c = abs(ret);						// Dim bellow  the cut-off
 
-			dimen_[q][ds] = dim_c;							// Save the Dim[q.ds]
+			dimen_[q][ds] = dim_c;						// Save the Dim[q.ds]
 
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;						
@@ -352,17 +345,16 @@ for (int q=0; q < nq; q++) {
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
 			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim);			// Alloc memory to save E-Vectors
 
-			std::cout << "Number of Basis bellow the ultraviolet cut-off Energy: " << ret << std::endl;	
-			std::cout << "Eigen values (Non scaled): " << std::endl;
-			//std::cout << D_N*eigen_values[0] << ";";
-			
 			for (long k=0; k<dim_c; k++) {
 				eigen_erg_write(q,ds,k,eigen_values[k]);
-				std::cout << D_N*eigen_values[k] << ";";
+				if (E_f > eigen_values[k]){
+					E_f = eigen_values[k];
+				}
 			}
+
 			delete[] eigen_values;
 			eigen_values = NULL;
-			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+
 			for (int i=0; i< dim; i++) {						// Line 0, 1... dim_cut_off
 				int signal = 1;
 				if (eigen_vectors[i][0] < 0){
@@ -376,15 +368,12 @@ for (int q=0; q < nq; q++) {
 				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
 					if ( i < dim_c){
 						eigen_vect_write(q,ds,(long) i*dim+j, (double) signal*eigen_vectors[i][j]); 
-						//std::cout << eigen_vectors[i][j] << ";";
 					}
 				}
-				//std::cout << std::endl;
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
 			eigen_vectors= NULL;
-			std::cout << std::endl<< std::endl;
 		} //end if dim > 0
 	} //end for ds
 	delete[] HN_[q];
@@ -392,7 +381,41 @@ for (int q=0; q < nq; q++) {
 delete[] HN_;
 HN_ = NULL;
 
-std::cout << "Diagonalization process already finished for 'Left Side' N = "<< N<<"!" << std::endl<< std::endl<< std::endl<< std::endl;
+// Printing the eigen energies and eigen vectors
+std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
+
+		if(dim > 0) {
+			std::cout << "["<< (q - N - 2) << ";" << ds;
+			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
+			std::cout << "Eigen values (Non Scaled): " << std::endl;
+
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen_erg_read(q,ds,k) - E_f;
+				eigen_erg_write(q,ds,k,Energy);	        	
+				std::cout << D_N*Energy << ";";         
+			}
+
+			/*  Printing The Vectors.
+			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+			for (int i=0; i<dim; i++) {
+				std::cout << '\t';
+				for (int j=0; j<dim_t; j++) {
+					long k =i*dim +j;
+					double vector = eigen_vect_read(q,ds,k);
+					std::cout << vector << ";" <<'\t';
+				}
+				std::cout << std::endl;
+			}
+			// */
+			std::cout << std::endl<< std::endl<< std::endl;
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
 
 if (N < fN_max()){
 

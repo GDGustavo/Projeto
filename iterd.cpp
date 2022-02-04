@@ -144,8 +144,9 @@ H0_[3][1][2] = 4*W + E_d();
 
 H0_[4][0][0] = 4*W + 2*E_d() + U();
 
-double lamb_ = lamb();
-double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);
+double lamb_ = lamb();									// Lambda
+double D_0   = (1-pow(lamb_, (float) -1))*(pow(lamb_,(float) 1/2))/log(lamb_);			// D_0
+double E_f   = (double) E_uv();								// Fundamental Energy 
 
 eigen_start(0); 						
 
@@ -157,49 +158,42 @@ for (int q=0; q < nq; q++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 		dimen_[q][ds] = dim;							// Saving the Dimension for each (Q,dS)
 		if(dim > 0) {
-			std::cout <<'\t'<< "N=0" <<'\t'<<'\t' << "["<< (q - 2) << ";" << ds;
-			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
 			eigen_erg_alloc_memory(q,ds,(long) dim);
 			eigen_vect_alloc_memory(q,ds,(long) dim*dim);
-			double *eigen_values = new double[dim];	            		// Changing the size
-			double **eigen_vectors = new double*[dim];	  			// Changing the size
+			double *eigen_values = new double[dim];	            		// Matrix to calculate E-Values
+			double **eigen_vectors = new double*[dim];	  			// Matrix to calculate E-Vectors
+			for (int k=0; k<dim; k++) {
+				eigen_vectors[k] = new double[dim];
+			}
 			int Nel_max = (1+dim)*dim/2;                                		// Maximum number of elements in LTM
 			double *Hamiltonian = new double[Nel_max];             		// Change the size
 			for (int k=0; k<Nel_max; k++) {					// Saving the values to diagolize
-				Hamiltonian[k]= H0_[q][ds][k];
 				Hamiltonian[k]= H0_[q][ds][k]/D_0;				// Att, scaled hamiltonian.
 			}
 			delete[] H0_[q][ds];
-			for (int k=0; k<dim; k++) {					// Making all elements zero
-				eigen_values[k] = 0;
-				eigen_vectors[k] = new double[dim];
-				for(int h=0; h< dim; h++){
-					eigen_vectors[k][h] = 0;
-				}
-			}
-			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 		// Solving the H
-			std::cout << "return givens = " << ret << std::endl;
+			
+			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 	// Solving the H
+			
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
-			std::cout << "Eigen values (Non Scaled): " << std::endl << '\t';
+
 			for (long k=0; k<dim; k++) {
-				eigen_erg_write(q,ds,k,eigen_values[k]);	        			// Saving the eigenvalues 
-				std::cout << D_0*eigen_values[k] << "; ";          
+				eigen_erg_write(q,ds,k,eigen_values[k]);	        			// Saving the eigenvalues
+				if (E_f > eigen_values[k]){
+					E_f = eigen_values[k];
+				}
 			}
+
 			delete[] eigen_values;
 			eigen_values = NULL; 
-			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+			
 			for (int i=0; i<dim; i++) {
-				std::cout << '\t';
 				for (int j=0; j<dim; j++) {
 					long k =i*dim +j;
 					eigen_vect_write(q,ds,k,eigen_vectors[i][j]);		// Saving the eigenvectors
-					//std::cout << eigen_vectors[i][j]<< ";" <<'\t';
 				}
-				//std::cout << std::endl;
 				delete[] eigen_vectors[i];	
 			}
-			std::cout << std::endl;
 			delete[] eigen_vectors;
 			eigen_vectors = NULL;
 		}// end if dim>0
@@ -209,9 +203,40 @@ for (int q=0; q < nq; q++) {
 delete[] H0_;
 H0_ = NULL;
 
-mel_start(0);									// Starting the Matrix |Q' S' r'|f_N^+|Q S r|
+// Printing the eigen energies and eigen vectors
+std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		if(dim > 0) {
+			std::cout << "["<< (q - 2) << ";" << ds;
+			std::cout << "] Sector"<<'\t'<<"dim ="<< dim << std::endl;
+			std::cout << "Eigen values (Non Scaled): " << std::endl;
 
-std::cout << "Diagonalization process already finished for 'Left Side' N = 0!" << std::endl<< std::endl<< std::endl<< std::endl;
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen_erg_read(q,ds,k) - E_f;
+				eigen_erg_write(q,ds,k,Energy);	        	
+				std::cout << D_0*Energy << ";";          
+			}
+
+			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+			for (int i=0; i<dim; i++) {
+				std::cout << '\t';
+				for (int j=0; j<dim; j++) {
+					long k =i*dim +j;
+					double vector = eigen_vect_read(q,ds,k);
+					std::cout << vector << ";" <<'\t';
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl<< std::endl<< std::endl;
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
+
+
+mel_start(0);									// Starting the Matrix |Q' S' r'|f_N^+|Q S r|
 
 // Matrix problem the Vector V_d is save in the LINE from matrix U: [V_d(i) = sum_j u(i,j)V_0(j);] ok. 
 // Non null elements off Matrix |Q' dS' p'|(f0^+)|Q dS p| for N=0

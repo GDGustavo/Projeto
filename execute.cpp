@@ -20,7 +20,7 @@ std::cout << std::endl;
 
 read_all_params();    								// Read the parameters to start the code.
 double W1 = W_1();								// What is the value of W ? 
-double W2 = W_1();
+double W2 = W_2();
 std::cout << std::endl;	
 
 int nq = 2*(2)+1; 								// Total number of possibles q in N=0. 

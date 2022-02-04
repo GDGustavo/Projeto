@@ -163,10 +163,11 @@ for(int i=0; i< nq; i++){
 }
 
 Populate_N_R(N, dimen_p_);
-double lamb_ = lamb();								    // It's reading Lambda from parameters.txt.
+double lamb_ = lamb();								    	// Reading Lambda from parameters.txt.
 double aux1 = (1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_, (float) -2*(N-1)-3)));
 double D_N  = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
-double t_N  = aux1;								    // It's calculating the coupling t_(N-1).
+double t_N  = aux1;								    	// Calculating the coupling t_(N-1).
+double E_f  = 200;									// Fundamental Energy
 
 // H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];
 
@@ -243,23 +244,17 @@ for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 		if(dim > 0) {
-			std::cout <<'\t'<<'\t'<<'\t' << "["<< (q - N - 2) << ";" << ds;
-			std::cout << "] Sector;"<<std::endl<<"dim ="<< dim << std::endl;
-			double *eigen_values = new double[dim];                        	// Changing the size
-			double **eigen_vectors = new double*[dim];		               	// Changing the size
+			double *eigen_values = new double[dim];                        	//
+			double **eigen_vectors = new double*[dim];		               	//
+			for (int k=0; k<dim; k++) {					//
+				eigen_vectors[k] = new double[dim];
+			}
 			long Nel_max = (1+dim)*dim/2;	                      		// Maximum number of elements in LTM
 			double* Hamiltonian = new double[Nel_max];                     	// Change the size
 			for (long k=0; k<Nel_max; k++) {					// Saving the values to diagolize
 				Hamiltonian[k]= HN_[q][ds][k];
 			}
 			delete[] HN_[q][ds];						// Deteling the HN in the sector (q,ds)
-			for (int k=0; k<dim; k++) {					// Making all elements zero
-				eigen_values[k] = 0;
-				eigen_vectors[k] = new double[dim];
-				for(int h=0; h< dim; h++){
-					eigen_vectors[k][h] = 0;
-				}
-			}
 			
 			int ret = dimen_[q][ds];						// Number of states bellow cut-off.
 			givens(dim, ret , Hamiltonian , eigen_values, eigen_vectors, 0);	// Solving the H
@@ -269,14 +264,14 @@ for (int q=0; q < nq; q++) {
 			eigen2_erg_alloc_memory(q,ds,(long) ret);
 			eigen2_vect_alloc_memory(q,ds,(long) ret*dim);
 
-			std::cout << "Eigen values: " << std::endl;
 			for (long k=0; k< ret ; k++) {
-				std::cout << D_N*eigen_values[k] << ";";
-				eigen2_erg_write(q,ds,k,eigen_values[k]); 
+				eigen2_erg_write(q,ds,k,eigen_values[k]);
+				if (E_f > eigen_values[k]){
+					E_f = eigen_values[k];
+				}
 			}
 			delete[] eigen_values;
 			eigen_values = NULL;
-			//std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i< dim; i++) {
 				int signal = 1;
 				if (eigen_vectors[i][0] < 0){
@@ -289,16 +284,13 @@ for (int q=0; q < nq; q++) {
 				}
 				for (int j=0; j<dim; j++) {
 					if(i < ret){  
-						//std::cout << eigen_vectors[i][j] <<"  " <<'\t' ;
 						eigen2_vect_write(q,ds,(long) i*dim+j,(double) signal*eigen_vectors[i][j]); 
 					}				
 				}
-				//std::cout << std::endl;
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
 			eigen_vectors= NULL;
-			std::cout << std::endl<< std::endl;
 		} //end if dim > 0
 	} //end for ds
 	delete[] HN_[q];
@@ -306,7 +298,40 @@ for (int q=0; q < nq; q++) {
 delete[] HN_;
 HN_ = NULL;
 
-std::cout << "Diagonalization process already finished for 'Right Side' N = "<< N<<"!" << std::endl<< std::endl<< std::endl<< std::endl;
+// Printing the eigen energies and eigen vectors
+std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
+
+		if(dim > 0) {
+			std::cout << "["<< (q - N - 2) << ";" << ds;
+			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
+			std::cout << "Eigen values (Non Scaled): " << std::endl;
+
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen2_erg_read(q,ds,k) - E_f;
+				eigen2_erg_write(q,ds,k,Energy);	        	
+				std::cout << D_N*Energy << ";";         
+			}
+
+			/*  Printing The Vectors.
+			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+			for (int i=0; i<dim; i++) {
+				std::cout << '\t';
+				for (int j=0; j<dim_t; j++) {
+					long k =i*dim +j;
+					double vector = eigen2_vect_read(q,ds,k);
+					std::cout << vector << ";" <<'\t';
+				}
+				std::cout << std::endl;
+			}
+			// */
+			std::cout << std::endl<< std::endl<< std::endl;
+		}// end if dim>0
+	} //end for ds
+}//end for q
 
 
 if(N < fN_max()){
@@ -461,13 +486,14 @@ for(int q=0; q<nq; q++){
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
-				if(abs(sum) < 0.000001){
+				if(abs(sum) < 0.00000001){
 					sum = 0;
 				}
-				else{ if (r_L == r_R){
+				else{ //if (r_L == r_R){
 					  //std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
 				 	  //std::cout << sum << std::endl;
-				}}
+				      //}
+				}
 				projection_write(q,ds,k,sum);
 			} // end for k
 		} // end if dim > 0
