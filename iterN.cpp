@@ -238,10 +238,10 @@ double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_
 double t_N = aux; 									// Calculating the coupling t_(N-1).
 double E_f = (double) E_uv();								// Fundamental Energy
 
-std::cout << "D_N = "<< '\t' << '\t' << D_N <<std::endl;
-std::cout << "t_{N-1}/D_N= " << '\t' << t_N <<std::endl;
-std::cout << "t_{N-1}= " << '\t' <<  t_N*D_N <<std::endl;
-std::cout << "Ultraviolet Cut-off Energy (non scaled): " << '\t' << D_N*E_uv_ << std::endl;
+std::cout << "D_" << N << "=     "<< '\t' << D_N <<std::endl;
+std::cout << "t_"<<N-1<<"/D_"<<N<<"=    " << '\t' << t_N <<std::endl;
+std::cout << "t_"<<N-1<<"=      " << '\t' <<  t_N*D_N <<std::endl;
+std::cout << "Ultraviolet Cut-off Energy (non scaled): " << '\t' <<" " << D_N*E_uv_ << std::endl;
 
 
 // H_N[p',p] = H_{N-1}[p',p] + t_{N-1}*M_N[p',p] + t_{N-1}*M_N[p,p']; 			Non scaled Hamiltonian
@@ -382,7 +382,7 @@ delete[] HN_;
 HN_ = NULL;
 
 // Printing the eigen energies and eigen vectors
-std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
@@ -390,8 +390,8 @@ for (int q=0; q < nq; q++) {
 
 		if(dim > 0) {
 			std::cout << "["<< (q - N - 2) << ";" << ds;
-			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): " << std::endl;
+			std::cout << "] Sector"<< '\t' <<"dim_t ="<< dim_t <<";" << '\t' <<"dim_c ="<< dim << std::endl;
+			std::cout << "Eigen values (Non Scaled): ";
 
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen_erg_read(q,ds,k) - E_f;
@@ -406,12 +406,12 @@ for (int q=0; q < nq; q++) {
 				for (int j=0; j<dim_t; j++) {
 					long k =i*dim +j;
 					double vector = eigen_vect_read(q,ds,k);
-					std::cout << vector << ";" <<'\t';
+					std::cout << vector << "; ";
 				}
 				std::cout << std::endl;
 			}
 			// */
-			std::cout << std::endl<< std::endl<< std::endl;
+			std::cout << std::endl<< std::endl;
 		}// end if dim>0
 	} //end for ds
 }//end for q

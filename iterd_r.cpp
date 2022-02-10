@@ -182,21 +182,21 @@ delete[] H0_;
 H0_ = NULL;
 
 // Printing the eigen energies and eigen vectors
-std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
+std::cout << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
 		if(dim > 0) {
 			std::cout << "["<< (q - 2) << ";" << ds;
 			std::cout << "] Sector"<<'\t'<<"dim ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): " << std::endl;
+			std::cout << "Eigen values (Non Scaled): ";
 
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen2_erg_read(q,ds,k) - E_f;
 				eigen2_erg_write(q,ds,k,Energy);	        	
 				std::cout << D_0*Energy << ";";          
 			}
-
+			/*
 			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i<dim; i++) {
 				std::cout << '\t';
@@ -207,7 +207,8 @@ for (int q=0; q < nq; q++) {
 				}
 				std::cout << std::endl;
 			}
-			std::cout << std::endl<< std::endl<< std::endl;
+			// */
+			std::cout << std::endl<< std::endl;
 		}// end if dim>0
 	} //end for ds
 }//end for q

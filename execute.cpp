@@ -15,7 +15,7 @@ static int **dimen;								// Number of basis on the (Q,S)_N sector.
 int main(){
 time_t beg_time = time(NULL);
 
-std::cout << "Starting the NRG code..." << std::endl<< std::endl;
+std::cout << "Starting the NRG code..." << std::endl;
 std::cout << std::endl;	
 
 read_all_params();    								// Read the parameters to start the code.
@@ -42,7 +42,7 @@ iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
 //  EigenVectors: |Q dS r||Q dS p|: N = 0;
 //  Dim(0); 
 
-std::cout << "Done! Iteraction 0 complete!" << std::endl<< std::endl<< std::endl;
+std::cout << "Done! Iteraction 0 complete!" << std::endl<< std::endl;
 
 // 						ITERATIVE SOLUTION N > 0
 for(int ni = 1; ni <= N_max; ni ++){   
@@ -69,11 +69,11 @@ for(int ni = 1; ni <= N_max; ni ++){
 	dimen_p = dimen;								// Left: New imput of number of basis
 										 
 
-	std::cout << "Done! Iteraction " << ni <<  " complete!" << std::endl<< std::endl<< std::endl<< std::endl;
+	std::cout << "Done! Iteraction " << ni <<  " complete!" << std::endl<< std::endl<< std::endl;
 
 	float time_ = difftime(time(NULL), beg_time);
 
-	std::cout << "The code takes " << time_  <<  " seconds util this point." << std::endl << std::endl;
+	//std::cout << "The code takes " << time_  <<  " seconds util this point." << std::endl << std::endl;
 }
 //*/
 
@@ -88,9 +88,10 @@ return 0;
 
 
 // Até a iteração N = 3, todas as autoenergias foram corrigidas. 
-// 18/01/2022 até o N = 5, tempo de execução: 4.40 min. (Cada setor)
-// 18/01/2022 até o N = 4, tempo de execução: 1 min (Ambos os setores + projeção).
-// Projeções conferidas até N= 4. Mesmos valores de W1 e W2.
+// 09/02/2022 até o N = 30, tempo de execução: 1.0 min. (Cada setor)
+// 09/02/2022 até o N = 30, tempo de execução: 40 min (Ambos os setores + projeção).
+// Projeções conferidas até N= 30. Mesmos valores de W1 e W2.
+// Energias e projeções conferidas em um caso particular (anotado no caderno) até N = 2. 
 // Energia de corte ultravioleta E_uv inserido no Bra "Left".
 
 

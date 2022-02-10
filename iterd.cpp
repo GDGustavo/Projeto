@@ -172,7 +172,7 @@ for (int q=0; q < nq; q++) {
 			}
 			delete[] H0_[q][ds];
 			
-			int ret = givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 	// Solving the H
+			givens(dim, dim , Hamiltonian , eigen_values, eigen_vectors, 1); 	// Solving the H
 			
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;
@@ -204,21 +204,21 @@ delete[] H0_;
 H0_ = NULL;
 
 // Printing the eigen energies and eigen vectors
-std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
+std::cout << "Fundamental Energy (Non Escaled) for N = 0:" << '\t' << D_0*E_f << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
 		if(dim > 0) {
 			std::cout << "["<< (q - 2) << ";" << ds;
 			std::cout << "] Sector"<<'\t'<<"dim ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): " << std::endl;
+			std::cout << "Eigen values (Non Scaled): ";
 
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen_erg_read(q,ds,k) - E_f;
 				eigen_erg_write(q,ds,k,Energy);	        	
 				std::cout << D_0*Energy << ";";          
 			}
-
+			/*
 			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i<dim; i++) {
 				std::cout << '\t';
@@ -229,7 +229,8 @@ for (int q=0; q < nq; q++) {
 				}
 				std::cout << std::endl;
 			}
-			std::cout << std::endl<< std::endl<< std::endl;
+			// */
+			std::cout << std::endl<< std::endl;
 		}// end if dim>0
 	} //end for ds
 }//end for q
@@ -352,7 +353,7 @@ H(0,0) = E_d();
 H(0,1) = sqrt(2)*V_0();
 
 H(1,2) = t0;
-H(1,1) = 2*W_1();
+H(1,1) = 2*W_2();
 H(1,0) = sqrt(2)*V_0();
 
 H(2,1) = t0;

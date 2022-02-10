@@ -299,7 +299,7 @@ delete[] HN_;
 HN_ = NULL;
 
 // Printing the eigen energies and eigen vectors
-std::cout << std::endl << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
@@ -308,7 +308,7 @@ for (int q=0; q < nq; q++) {
 		if(dim > 0) {
 			std::cout << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): " << std::endl;
+			std::cout << "Eigen values (Non Scaled): ";
 
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen2_erg_read(q,ds,k) - E_f;
@@ -323,12 +323,12 @@ for (int q=0; q < nq; q++) {
 				for (int j=0; j<dim_t; j++) {
 					long k =i*dim +j;
 					double vector = eigen2_vect_read(q,ds,k);
-					std::cout << vector << ";" <<'\t';
+					std::cout << vector << "; ";
 				}
 				std::cout << std::endl;
 			}
 			// */
-			std::cout << std::endl<< std::endl<< std::endl;
+			std::cout << std::endl<< std::endl;
 		}// end if dim>0
 	} //end for ds
 }//end for q
@@ -490,8 +490,8 @@ for(int q=0; q<nq; q++){
 					sum = 0;
 				}
 				else{ //if (r_L == r_R){
-					  //std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				 	  //std::cout << sum << std::endl;
+					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
+				 	  std::cout << sum << std::endl;
 				      //}
 				}
 				projection_write(q,ds,k,sum);
