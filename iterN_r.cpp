@@ -486,12 +486,12 @@ for(int q=0; q<nq; q++){
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
-				if(abs(sum) < 0.00000001){
+				if(abs(sum) < 0.000000000001){
 					sum = 0;
 				}
 				else{ //if (r_L == r_R){
-					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				 	  std::cout << sum << std::endl;
+					//  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
+				 	//  std::cout << sum << std::endl;
 				      //}
 				}
 				projection_write(q,ds,k,sum);

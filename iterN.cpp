@@ -238,10 +238,10 @@ double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_
 double t_N = aux; 									// Calculating the coupling t_(N-1).
 double E_f = (double) E_uv();								// Fundamental Energy
 
-std::cout << "D_" << N << "=     "<< '\t' << D_N <<std::endl;
-std::cout << "t_"<<N-1<<"/D_"<<N<<"=    " << '\t' << t_N <<std::endl;
-std::cout << "t_"<<N-1<<"=      " << '\t' <<  t_N*D_N <<std::endl;
-std::cout << "Ultraviolet Cut-off Energy (non scaled): " << '\t' <<" " << D_N*E_uv_ << std::endl;
+//std::cout << "D_" << N << "=     "<< '\t' << D_N <<std::endl;
+//std::cout << "t_"<<N-1<<"/D_"<<N<<"=    " << '\t' << t_N <<std::endl;
+//std::cout << "t_"<<N-1<<"=      " << '\t' <<  t_N*D_N <<std::endl;
+//std::cout << "Ultraviolet Cut-off Energy (non scaled)= E_0 + "<<" " << D_N*E_uv_ << std::endl;
 
 
 // H_N[p',p] = H_{N-1}[p',p] + t_{N-1}*M_N[p',p] + t_{N-1}*M_N[p,p']; 			Non scaled Hamiltonian
@@ -332,8 +332,13 @@ for (int q=0; q < nq; q++) {
 				Hamiltonian[k] = HN_[q][ds][k];
 			}
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
-
-			eigen_values[0] = E_uv_;						// Cut-off Energy
+			
+			if(N <= 3){
+				eigen_values[0] = 2000;					// Cut-off only for N>3
+			}
+			else{
+				eigen_values[0] = E_uv_;					// Cut-off Energy
+			}
 			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);// Solve the hamiltonian
 			int dim_c = abs(ret);						// Dim bellow  the cut-off
 
@@ -382,21 +387,24 @@ delete[] HN_;
 HN_ = NULL;
 
 // Printing the eigen energies and eigen vectors
-std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
+std::cout << std::setprecision(8) << std::fixed;
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << -D_N*(eigen_erg_read(0,0,0)-E_f) << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
 		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 
 		if(dim > 0) {
+		if(abs(q-N-2) + ds <= 4){
 			std::cout << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector"<< '\t' <<"dim_t ="<< dim_t <<";" << '\t' <<"dim_c ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): ";
+			std::cout << "Eigen values (Escaled): ";
 
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen_erg_read(q,ds,k) - E_f;
 				eigen_erg_write(q,ds,k,Energy);	        	
-				std::cout << D_N*Energy << ";";         
+				//std::cout << D_N*Energy << ";"; // Non escaled results 
+				std::cout << Energy << ";";       // Escaled results         
 			}
 
 			/*  Printing The Vectors.
@@ -412,6 +420,7 @@ for (int q=0; q < nq; q++) {
 			}
 			// */
 			std::cout << std::endl<< std::endl;
+		}
 		}// end if dim>0
 	} //end for ds
 }//end for q
