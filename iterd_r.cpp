@@ -297,12 +297,12 @@ for(int q=0; q<nq; q++){
 					double aux_r = eigen2_vect_read(q,ds,(long) r_r*dim +p);
 					sum = sum + aux_l*aux_r;
 				}
-				if(abs(sum) < 0.000000000001){
+				if(abs(sum) < 0.00000000000001){
 					sum = 0;
 				}
 				projection_write(q,ds,k,sum);
-				std::cout <<"Proj["<<q-2<<";"<< ds<<"]("<<r_l + 1 << ";" <<r_r + 1 << ") = " <<'\t'; 
-				std::cout << projection_read(q,ds,k) << std::endl;
+				//std::cout <<"Proj["<<q-2<<";"<< ds<<"]("<<r_l + 1 << ";" <<r_r + 1 << ") = " <<'\t'; 
+				//std::cout << projection_read(q,ds,k) << std::endl;
 			} // end for k
 		} // end if dim > 0
 	} // end for ds

@@ -167,7 +167,7 @@ double lamb_ = lamb();								    	// Reading Lambda from parameters.txt.
 double aux1 = (1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_, (float) -2*(N-1)-1))*(1-pow(lamb_, (float) -2*(N-1)-3)));
 double D_N  = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_); 
 double t_N  = aux1;								    	// Calculating the coupling t_(N-1).
-double E_f  = 200;									// Fundamental Energy
+double E_f  = 1e20;									// Fundamental Energy
 
 // H_N[p',p] = H_(N-1)[p',p] + t_(N-1)*M_N[p',p] + t_(N-1)*M_N[p,p'];
 
@@ -298,37 +298,51 @@ for (int q=0; q < nq; q++) {
 delete[] HN_;
 HN_ = NULL;
 
+// Subtracting the Fundamental energy from energy spectre.
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << -D_N*(eigen2_erg_read(0,0,0)-E_f) << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		if(dim > 0) {
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen2_erg_read(q,ds,k) - E_f;
+				eigen2_erg_write(q,ds,k,Energy);	        	
+			}
+
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
 // Printing the eigen energies and eigen vectors
-std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << D_N*E_f << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
 		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
-
 		if(dim > 0) {
-			std::cout << "["<< (q - N - 2) << ";" << ds;
-			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
-			std::cout << "Eigen values (Non Scaled): ";
-
-			for (long k=0; k<dim; k++) {
-				double Energy = eigen2_erg_read(q,ds,k) - E_f;
-				eigen2_erg_write(q,ds,k,Energy);	        	
-				std::cout << D_N*Energy << ";";         
-			}
-
-			/*  Printing The Vectors.
-			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
-			for (int i=0; i<dim; i++) {
-				std::cout << '\t';
-				for (int j=0; j<dim_t; j++) {
-					long k =i*dim +j;
-					double vector = eigen2_vect_read(q,ds,k);
-					std::cout << vector << "; ";
+			if(abs(q-N-2) + ds <= 1){
+					std::cout << "["<< (q - N - 2) << ";" << ds;
+					std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
+					std::cout << "Eigen values (Escaled): ";
+	
+				for (long k=0; k<dim; k++) {
+					double Energy = eigen2_erg_read(q,ds,k);        	
+					std::cout << Energy << ";";         
 				}
-				std::cout << std::endl;
+
+				/*  Printing The Vectors.
+				std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
+				for (int i=0; i<dim; i++) {
+					std::cout << '\t';
+					for (int j=0; j<dim_t; j++) {
+						long k =i*dim +j;
+						double vector = eigen2_vect_read(q,ds,k);
+						std::cout << vector << "; ";
+					}
+					std::cout << std::endl;
+				}
+				// */
+				std::cout << std::endl<< std::endl;
 			}
-			// */
-			std::cout << std::endl<< std::endl;
 		}// end if dim>0
 	} //end for ds
 }//end for q
@@ -427,8 +441,6 @@ save_projection(N-1, dimen_p_);         // Save the past projection matrix
 projection_delete(N-1, dimen_p_);       // Delete the projection matrix from the iteraction N-1
 projection_start(N);                    // Starting the adress in the sector (q, ds) to save the matrix projection
 
-std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " << N <<";" << std::endl << std::endl;
-
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
 		int dim = dimen_[q][ds];
@@ -486,13 +498,8 @@ for(int q=0; q<nq; q++){
 						sum = sum + aux_1*aux_2*aux_3;
 					}
 				}
-				if(abs(sum) < 0.000000000001){
+				if(abs(sum) < 1e-14){
 					sum = 0;
-				}
-				else{ //if (r_L == r_R){
-					//  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = " <<'\t'; 
-				 	//  std::cout << sum << std::endl;
-				      //}
 				}
 				projection_write(q,ds,k,sum);
 			} // end for k
@@ -501,6 +508,31 @@ for(int q=0; q<nq; q++){
 } // end for q
 
 save_projection_delete(N-1, dimen_p_);  // Delete the saved matrix
+
+// Printing the projections in the last iteraction
+if (N == fN_max()){
+
+std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " << N <<";" << std::endl << std::endl;
+
+for(int q=0; q<nq; q++){
+	for(int ds = 0; ds < ns; ds++){
+		int dim = dimen_[q][ds];
+		if((dim> 0)&&(abs(q-N-2) + ds <= 1)){
+			for(long k = 0; k < dim*dim; k++){
+				int r_L = k/dim;							// Line
+				int r_R = k - r_L*dim;						// Colum
+				double sum = projection_read(q,ds,k);
+				if(abs(sum) > 0){
+					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = "; 
+					  std::cout << sum << "; ";
+				}
+			} // end for k
+		 	std::cout << std::endl<< std::endl;
+		} // end if dim > 0
+	} // end for ds
+} // end for q
+
+}
 
 
 for (int q = 0; q < nq; q++){

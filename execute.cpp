@@ -20,6 +20,7 @@ time_t beg_time = time(NULL);
 
 std::cout << "Starting the NRG code..." << std::endl;
 std::cout << std::endl;	
+std::cout << std::setprecision(8) << std::fixed;
 
 read_all_params();    								// Read the parameters to start the code.
 double W1 = W_1();								// What is the value of W ? 
@@ -38,7 +39,7 @@ for(int i=0; i< nq; i++){
 }
 
 iter0_l(W1, dimen_p); 								// Initial condictions for "Left Side" N = 0;
-//iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
+iter0_r(W2);									// Initial condictions for "Right Side" N = 0;
 
 //  Matrix |Q' dS' r'|f_N^+|Q dS r|: N = 0;
 //  Eigenvalues: |Q dS r|H_N|Q dS r|: N = 0;
@@ -61,7 +62,7 @@ for(int ni = 1; ni <= N_max; ni ++){
 	}
 
 	iterN_L(ni, dimen_p, dimen);						// Solve the 'Left Side' hamiltonian for N=ni
-	//iterN_R(ni, dimen_p, dimen);						// Solve the 'Right Side' hamiltonian for N=ni
+	iterN_R(ni, dimen_p, dimen);						// Solve the 'Right Side' hamiltonian for N=ni
 
 	nq = 2*(ni-1+2)+1; 							// Delete the dimen_p matrix. 
 	for (int q = 0; q < nq; q++){
@@ -89,12 +90,9 @@ std::cout << "The code is executed in " << time_  <<  " minutes." << std::endl;
 return 0;
 }
 
-
 // Até a iteração N = 3, todas as autoenergias foram corrigidas. 
 // 09/02/2022 até o N = 30, tempo de execução: 1.0 min. (Cada setor)
-// 09/02/2022 até o N = 30, tempo de execução: 40 min (Ambos os setores + projeção).
+// 09/02/2022 até o N = 30, tempo de execução: 20 min (Ambos os setores + projeção).
 // Projeções conferidas até N= 30. Mesmos valores de W1 e W2.
 // Energias e projeções conferidas em um caso particular (anotado no caderno) até N = 2. 
 // Energia de corte ultravioleta E_uv inserido no Bra "Left".
-
-

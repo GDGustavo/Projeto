@@ -236,7 +236,7 @@ double E_uv_ = (double) E_uv();								// Cut-Off Energy
 double aux =(1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_,(float) -2*(N-1)-1))*(1-pow(lamb_,(float) -2*(N-1)-3)));	
 double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_);		// D_N
 double t_N = aux; 									// Calculating the coupling t_(N-1).
-double E_f = (double) E_uv();								// Fundamental Energy
+double E_f = 1e20;									// Fundamental Energy
 
 //std::cout << "D_" << N << "=     "<< '\t' << D_N <<std::endl;
 //std::cout << "t_"<<N-1<<"/D_"<<N<<"=    " << '\t' << t_N <<std::endl;
@@ -333,8 +333,8 @@ for (int q=0; q < nq; q++) {
 			}
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
 			
-			if(N <= 3){
-				eigen_values[0] = 2000;					// Cut-off only for N>3
+			if(N <= 4){
+				eigen_values[0] = 200000000;				// Cut-off only for N>4
 			}
 			else{
 				eigen_values[0] = E_uv_;					// Cut-off Energy
@@ -356,7 +356,7 @@ for (int q=0; q < nq; q++) {
 					E_f = eigen_values[k];
 				}
 			}
-
+			
 			delete[] eigen_values;
 			eigen_values = NULL;
 
@@ -386,24 +386,38 @@ for (int q=0; q < nq; q++) {
 delete[] HN_;
 HN_ = NULL;
 
+
+// Subtracting the Fundamental energy from energy spectre.
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << -D_N*(eigen_erg_read(0,0,0)-E_f) << std::endl<< std::endl;
+for (int q=0; q < nq; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+		if(dim > 0) {
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen_erg_read(q,ds,k) - E_f;
+				eigen_erg_write(q,ds,k,Energy);	        	
+			}
+
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
+
 // Printing the eigen energies and eigen vectors
 std::cout << std::setprecision(8) << std::fixed;
-std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << -D_N*(eigen_erg_read(0,0,0)-E_f) << std::endl<< std::endl;
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
 		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 
 		if(dim > 0) {
-		if(abs(q-N-2) + ds <= 4){
+		if(abs(q-N-2) + ds <= 1){
 			std::cout << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector"<< '\t' <<"dim_t ="<< dim_t <<";" << '\t' <<"dim_c ="<< dim << std::endl;
 			std::cout << "Eigen values (Escaled): ";
 
 			for (long k=0; k<dim; k++) {
-				double Energy = eigen_erg_read(q,ds,k) - E_f;
-				eigen_erg_write(q,ds,k,Energy);	        	
-				//std::cout << D_N*Energy << ";"; // Non escaled results 
+				double Energy = eigen_erg_read(q,ds,k);
 				std::cout << Energy << ";";       // Escaled results         
 			}
 
@@ -424,6 +438,33 @@ for (int q=0; q < nq; q++) {
 		}// end if dim>0
 	} //end for ds
 }//end for q
+
+/*
+// Printing the eigen energies non scaled by D_N
+std::cout << "Fundamental Energy (Non Escaled) for N = "<< N <<":" << '\t' << -D_N*(eigen_erg_read(0,0,0)-E_f) << std::endl<< std::endl;
+for (int q=0; q < 2; q++) {
+	for (int ds=0; ds < ns; ds++) {
+		int dim = dimen_[q][ds];
+
+		if(dim > 0) {
+			if((q==1)){
+					std::cout << "["<< (q - N - 2) << ";" << ds;
+					std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
+					std::cout << "Eigen values (Non Escaled): ";
+	
+				for (long k=0; k<dim; k++) {
+					double E_0 = eigen_erg_read(0,0,0);
+					double Energy = D_N*(eigen_erg_read(q,ds,k) - E_0);
+					std::cout << Energy << ";";         
+				}
+
+				std::cout << std::endl<< std::endl;
+			}
+		}// end if dim>0
+	} //end for ds
+}//end for q
+
+// */
 
 
 if (N < fN_max()){
