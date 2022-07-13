@@ -87,12 +87,16 @@ float time_ = difftime(end_time, beg_time) /60;    					// Converte in seconds t
 
 std::cout << "The code is executed in " << time_  <<  " minutes." << std::endl;
 
+std::cout << "The results are saved in the archives: Energy1.txt, Energy2.txt, Projections.txt" << std::endl;
+
+
 return 0;
 }
 
-// Até a iteração N = 3, todas as autoenergias foram corrigidas. 
+// Até a iteração N = 4, todas as autoenergias foram corrigidas. 
 // 09/02/2022 até o N = 30, tempo de execução: 1.0 min. (Cada setor)
 // 09/02/2022 até o N = 30, tempo de execução: 20 min (Ambos os setores + projeção).
 // Projeções conferidas até N= 30. Mesmos valores de W1 e W2.
-// Energias e projeções conferidas em um caso particular (anotado no caderno) até N = 2. 
+// Energias e projeções conferidas em um caso particular U=0 ou V=0 (anotado no caderno) até N = 4. 
 // Energia de corte ultravioleta E_uv inserido no Bra "Left".
+// Energias e projeções conferidas em um caso particular U=0 até N = 30.

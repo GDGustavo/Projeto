@@ -335,37 +335,5 @@ NE_ = NULL;
 NN_ = NULL;
 NW_ = NULL;
 
-// End Function ITER0(); OK. Working very well!
-
-/*
-double t0 = 0.619806;
-double t1 = 0.271711;
-
-Eigen::MatrixXd H;
-H = Eigen::MatrixXd::Ones(4,4);
-for(int i=0; i< 4; i++){
-	for (int j = 0; j<4; j++){ 
-			H(i,j) = 0;
-	}
-}
-
-H(0,0) = E_d();
-H(0,1) = sqrt(2)*V_0();
-
-H(1,2) = t0;
-H(1,1) = 2*W_2();
-H(1,0) = sqrt(2)*V_0();
-
-H(2,1) = t0;
-H(2,3) = t1; 
-
-H(3,2) = t1;
-
-std::cout << H << std::endl;
-Eigen::EigenSolver<Eigen::MatrixXd> s(H);
-std::cout << s.eigenvalues() << std::endl;
-std::cout << s.eigenvectors() << std::endl;
-//*/
-
 
 }

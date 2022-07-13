@@ -334,15 +334,18 @@ for (int q=0; q < nq; q++) {
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
 			
 			if(N <= 4){
-				eigen_values[0] = 200000000;				// Cut-off only for N>4
+				eigen_values[0] = 10*E_uv_;				// Cut-off diferent for N<=4
 			}
 			else{
 				eigen_values[0] = E_uv_;					// Cut-off Energy
 			}
+
 			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);// Solve the hamiltonian
 			int dim_c = abs(ret);						// Dim bellow  the cut-off
+					
 
 			dimen_[q][ds] = dim_c;						// Save the Dim[q.ds]
+
 
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;						
@@ -410,17 +413,30 @@ for (int q=0; q < nq; q++) {
 		int dim = dimen_[q][ds];
 		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
 
-		if(dim > 0) {
-		if(abs(q-N-2) + ds <= 1){
+		if((dim > 0)&&(abs(q-N-2) + ds <= 1)&&(ds==0)&&(q-N-2>=0)) {
 			std::cout << "["<< (q - N - 2) << ";" << ds;
 			std::cout << "] Sector"<< '\t' <<"dim_t ="<< dim_t <<";" << '\t' <<"dim_c ="<< dim << std::endl;
 			std::cout << "Eigen values (Escaled): ";
-
+			
 			for (long k=0; k<dim; k++) {
 				double Energy = eigen_erg_read(q,ds,k);
+				std::cout << "E[" << k+1 << "]=";
 				std::cout << Energy << ";";       // Escaled results         
 			}
-
+			
+			if (N == fN_max()){
+				std::ofstream file;
+				file.open("Energy1.txt");
+				//Saving the Energies 
+				for (long k=0; k<dim; k++) {
+					double Energy = eigen_erg_read(q,ds,k);        
+					file << std::setprecision(12) << Energy;
+					file << std::endl;
+				}
+  				//Closing the file
+  				file.close();
+			}			
+			
 			/*  Printing The Vectors.
 			std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
 			for (int i=0; i<dim; i++) {
@@ -434,7 +450,6 @@ for (int q=0; q < nq; q++) {
 			}
 			// */
 			std::cout << std::endl<< std::endl;
-		}
 		}// end if dim>0
 	} //end for ds
 }//end for q

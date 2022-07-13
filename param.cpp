@@ -59,7 +59,7 @@ int write_param(std::string var, float var_value){
   std::string s = var + "==";
   std::regex e ("^([a-zA-Z_]\\w*)\\s*==\\s*([^#]+?)$");
   std::smatch cm;
-  std::regex_match (cstr, cm, e, std::regex_constants::match_default );
+  std::regex_match (cstr, cm, e, std::regex_constants::match_default);
  
   str1 = cm[2];     
   if(var == cm[1]){
@@ -124,35 +124,33 @@ std::cout << "Reading all parameters..." << std::endl;
 Lamb_ = read_param("Lambda");
 std::cout << "Lambda = "<< Lamb_ << std::endl;
 
-Gamma_ = read_param("Gamma");
-std::cout << "Gamma = "<< Gamma_ << std::endl;
-
-z_m_ = read_param("z_m");
-std::cout << "z_m = "<< z_m_ << std::endl;
-
-D_ = read_param("D_b");
-std::cout << "D_b_ = "<< D_ << std::endl;
-
-U_ = read_param("U");
-std::cout << "U = "<< U_ << std::endl;
+//Gamma_ = read_param("Gamma");
+//std::cout << "Gamma = "<< Gamma_ << std::endl;
 
 N_max_ = (int) static_cast<int>(read_param("N_max"));
-std::cout << "N_max = "<< N_max_ << std::endl;
+std::cout << "N_max="<< '\t' << N_max_ << std::endl;
 
 E_d_ = read_param("E_d");
-std::cout << "E_d = "<< E_d_ << std::endl;
+std::cout << "E_d=" << '\t'<< E_d_ << std::endl;
+
+U_ = read_param("U");
+std::cout << "U="<< '\t' << U_ << std::endl;
 
 V_0_ = read_param("V_0");
-std::cout << "V_0 = "<< V_0_ << std::endl;
-
-E_uv_ = read_param("E_uv");
-std::cout << "E_uv = "<< E_uv_ << std::endl;
+std::cout << "V_0="<< '\t' << V_0_ << std::endl;
 
 W_1_ = read_param("W_1");
-std::cout << "W_1 = "<< W_1_ << std::endl;
+std::cout << "W_1="<<  '\t' << W_1_ << std::endl;
 
 W_2_ = read_param("W_2");
-std::cout << "W_2 = "<< W_2_ << std::endl;
+std::cout << "W_2="<< '\t' << W_2_ << std::endl;
+
+
+z_m_ = read_param("z_m");
+std::cout << "z_m=" << '\t' << z_m_ << std::endl;
+
+E_uv_ = read_param("E_uv");
+std::cout << "E_uv=" << '\t' << E_uv_ << std::endl;
 
 std::cout << "Done! All parameters have already been read!" << std::endl;
 

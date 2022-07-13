@@ -317,17 +317,28 @@ for (int q=0; q < nq; q++) {
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = dimen_[q][ds];
-		int dim_t = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
-		if(dim > 0) {
-			if(abs(q-N-2) + ds <= 1){
-					std::cout << "["<< (q - N - 2) << ";" << ds;
-					std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
-					std::cout << "Eigen values (Escaled): ";
+		if((dim > 0)&&(abs(q-N-2) + ds <= 1)&&(ds==0)&&(q-N-2>=0)) {
+			std::cout << "["<< (q - N - 2) << ";" << ds;
+			std::cout << "] Sector"<< '\t' <<"dim ="<< dim << std::endl;
+			std::cout << "Eigen values (Escaled): ";
 	
+			for (long k=0; k<dim; k++) {
+				double Energy = eigen2_erg_read(q,ds,k);
+				std::cout << "E[" << k+1 << "]=";        	
+				std::cout << Energy << ";";         
+			}
+			if (N == fN_max()){
+				std::ofstream file2;
+				file2.open("Energy2.txt");
+				//Saving the Energies 
 				for (long k=0; k<dim; k++) {
-					double Energy = eigen2_erg_read(q,ds,k);        	
-					std::cout << Energy << ";";         
+					double Energy = eigen2_erg_read(q,ds,k);        
+					file2 << std::setprecision(12) << Energy;
+					file2 << std::endl;
 				}
+  				//Closing the file
+  				file2.close();
+			}
 
 				/*  Printing The Vectors.
 				std::cout << std::endl << "Eigen vectors matrix:" << std::endl;
@@ -342,7 +353,6 @@ for (int q=0; q < nq; q++) {
 				}
 				// */
 				std::cout << std::endl<< std::endl;
-			}
 		}// end if dim>0
 	} //end for ds
 }//end for q
@@ -367,7 +377,7 @@ for(int q=0;q<(nq-1);q++){
 			int N22 = N21 + NE_[q+1][ds+1];	//
 			int N23 = N22 + NN_[q+1][ds+1];	//
 			int N24 = N23 + NW_[q+1][ds+1];	//
-			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
+			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);					// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line
@@ -391,7 +401,7 @@ for(int q=0;q<(nq-1);q++){
 				mel2_ne_write(q,ds,k,sum);
 			} //end for k
 		} // end if dim*dim2
-	} // end for ds
+	} // end for ds	
 	//|Q+1 dS-1 r2|(f_N^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS-1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS-1 p2|(f_N^+)|Q dS p1|
 	for(int ds=1;ds<ns;ds++){
 		int dim = dimen_[q][ds];
@@ -405,7 +415,7 @@ for(int q=0;q<(nq-1);q++){
 			int N22 = N21 + NE_[q+1][ds-1];	//
 			int N23 = N22 + NN_[q+1][ds-1];	//
 			int N24 = N23 + NW_[q+1][ds-1];	//
-			mel2_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
+			mel2_nw_alloc_memory(q,ds,(long) dim*dim2);					// 
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line
@@ -430,7 +440,6 @@ for(int q=0;q<(nq-1);q++){
 			} // end for k 
 		} // end if dim*dim2
 	} //end for ds
-
 } //end for q
 
 } // end if N < N_max
@@ -444,6 +453,12 @@ projection_start(N);                    // Starting the adress in the sector (q,
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
 		int dim = dimen_[q][ds];
+		if((N==fN_max())&&(abs(q-N-2) + ds > 1)){// For the last N we could only calculate in the ground state charge-spim 
+			dim = 0;
+		}
+		if((N==fN_max())&&(ds>0)&&(q-N-2<0)){
+			dim = 0;
+		}
 		if(dim> 0){
 			projection_alloc_memory(q,ds, (long) dim*dim);
 			int N1 = NS_[q][ds];							// Sup limit for g1 = 0
@@ -454,53 +469,42 @@ for(int q=0; q<nq; q++){
 				double sum = 0;
 				int r_L = k/dim;							// Line
 				int r_R = k - r_L*dim;						// Colum
-				for(int p_L = 0; p_L < N1 ; p_L ++){				// g1 = 0 
-					for(int p_R = 0; p_R < N1; p_R ++){				// g2 = 0
-						int dm_L= dimen_p_[q][ds];
-						int l_L = p_L + 1;
-						int l_R = p_R + 1; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-						double aux_3 = save_projection_read(q,ds,(long)(l_L-1)*dm_L +l_R-1); 
-						sum = sum + aux_1*aux_2*aux_3;
+					for(int p_L = 0; p_L < N1 ; p_L ++){				// g1 = 0 
+						for(int p_R = 0; p_R < N1; p_R ++){				// g2 = 0
+							int dm_L= dimen_p_[q][ds];
+							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
+							double aux_3 = save_projection_read(q,ds,(long)(p_L)*dm_L +p_R); 
+							sum = sum + aux_1*aux_2*aux_3;
+						}
 					}
-				}
-				for(int p_L = N1; p_L < N2; p_L ++){				// g1 = 1
-					for(int p_R = N1; p_R < N2; p_R ++){			// g2 = 1
-						int dm_L= dimen_p_[q-1][ds-1];
-						int l_L = (p_L+1)- N1;
-						int l_R = (p_R+1)- N1; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-						double aux_3 = save_projection_read(q-1,ds-1,(long)(l_L-1)*dm_L +l_R-1); 
-						sum = sum + aux_1*aux_2*aux_3;
+					for(int p_L = N1; p_L < N2; p_L ++){				// g1 = 1
+						for(int p_R = N1; p_R < N2; p_R ++){			// g2 = 1
+							int dm_L= dimen_p_[q-1][ds-1];
+							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
+							double aux_3 = save_projection_read(q-1,ds-1,(long)(p_L-N1)*dm_L+p_R-N1); 
+							sum = sum + aux_1*aux_2*aux_3;
+						}
 					}
-				}
-				for(int p_L = N2; p_L < N3; p_L ++){				// g1 = 2
-					for(int p_R = N2; p_R < N3; p_R ++){			// g2 = 2
-						int dm_L= dimen_p_[q-2][ds];
-						int l_L = (p_L+1) - N2;
-						int l_R = (p_R+1) - N2; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-						double aux_3 = save_projection_read(q-2,ds,(long)(l_L-1)*dm_L +l_R-1); 
-						sum = sum + aux_1*aux_2*aux_3;
+					for(int p_L = N2; p_L < N3; p_L ++){				// g1 = 2
+						for(int p_R = N2; p_R < N3; p_R ++){			// g2 = 2
+							int dm_L= dimen_p_[q-2][ds];
+							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
+							double aux_3 = save_projection_read(q-2,ds,(long) (p_L-N2)*dm_L +p_R-N2); 
+							sum = sum + aux_1*aux_2*aux_3;
+						}
 					}
-				}
-				for(int p_L = N3; p_L < N4; p_L ++){				// g1 = 3
-					for(int p_R = N3; p_R < N4; p_R ++){			// g2 = 3
-						int dm_L= dimen_p_[q-1][ds+1];
-						int l_L = (p_L+1) - N3;
-						int l_R = (p_R+1) - N3; 
-						double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-						double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-						double aux_3 = save_projection_read(q-1,ds+1,(long)(l_L-1)*dm_L +l_R-1); 
-						sum = sum + aux_1*aux_2*aux_3;
+					for(int p_L = N3; p_L < N4; p_L ++){				// g1 = 3
+						for(int p_R = N3; p_R < N4; p_R ++){			// g2 = 3
+							int dm_L= dimen_p_[q-1][ds+1];
+							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
+							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
+							double aux_3 = save_projection_read(q-1,ds+1,(long)(p_L-N3)*dm_L +p_R-N3); 
+							sum = sum + aux_1*aux_2*aux_3;
+						}
 					}
-				}
-				if(abs(sum) < 1e-14){
-					sum = 0;
-				}
 				projection_write(q,ds,k,sum);
 			} // end for k
 		} // end if dim > 0
@@ -511,28 +515,45 @@ save_projection_delete(N-1, dimen_p_);  // Delete the saved matrix
 
 // Printing the projections in the last iteraction
 if (N == fN_max()){
-
 std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " << N <<";" << std::endl << std::endl;
+
+std::ofstream file3;
+file3.open("Projections.txt");
 
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
 		int dim = dimen_[q][ds];
-		if((dim> 0)&&(abs(q-N-2) + ds <= 1)){
-			for(long k = 0; k < dim*dim; k++){
-				int r_L = k/dim;							// Line
-				int r_R = k - r_L*dim;						// Colum
-				double sum = projection_read(q,ds,k);
-				if(abs(sum) > 0){
-					  std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = "; 
-					  std::cout << sum << "; ";
+		double proj2 = 0;
+		double proj_max = 0;
+		int r_R_p_max = 0;
+		if((dim> 0)&&(abs(q-N-2) + ds <= 1)&&(ds==0)&&(q-N-2>=0)){
+			for(int r_L = 0; r_L < 0*dim+1; r_L++){						// Line /left side
+				for(int r_R = 0; r_R < dim; r_R++){					// Colum/ Right side
+					long k = r_L*dim + r_R;						
+					double sum = projection_read(q,ds,k);
+					std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = "; 
+					std::cout << sum << "; ";
+					file3 << std::setprecision(12) << sum;
+					file3 << std::endl;						  
+					  proj2 = proj2 + sum*sum;
+					  if(abs(sum)>proj_max){ 
+						proj_max = abs(sum);
+						r_R_p_max = r_R; 
+					  }
 				}
+				file3 << std::endl<< std::endl;
 			} // end for k
 		 	std::cout << std::endl<< std::endl;
+			std::cout <<"sum_n of Proj(0,n)²   = " << proj2 << std::endl;
+			std::cout <<"Maximum value of Proj = " << proj_max << "; r =" << (r_R_p_max +1);
+			std::cout << std::endl<< std::endl;
 		} // end if dim > 0
 	} // end for ds
 } // end for q
 
-}
+file3.close();
+
+} // end if N==N_max
 
 
 for (int q = 0; q < nq; q++){
