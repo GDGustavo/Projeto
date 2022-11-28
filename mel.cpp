@@ -144,19 +144,35 @@ for(int q = 0; q < nq; q++){
 	for(int ds=0; ds < ns; ds++){
 		int dim  = dimen[q][ds];
 		if (dim>0){
-			delete[] eigen_vect_[q][ds];
 			delete[] eigen_erg_[q][ds];
 		}
 	}
-	delete[] eigen_vect_[q];
 	delete[] eigen_erg_[q];
 }
 
-delete[] eigen_vect_;
 delete[] eigen_erg_;
 
-eigen_vect_ = NULL;
 eigen_erg_  = NULL;
+}
+
+void eigen_vect_delete(int N, int **dimen){
+
+int nq = 2*(N+2)+1; 								
+int ns = 1*(N+2)+1;								
+
+for(int q = 0; q < nq; q++){
+	for(int ds=0; ds < ns; ds++){
+		int dim  = dimen[q][ds];
+		if (dim>0){
+			delete[] eigen_vect_[q][ds];
+		}
+	}
+	delete[] eigen_vect_[q];
+}
+
+delete[] eigen_vect_;
+
+eigen_vect_ = NULL;
 }
 
 void eigen_erg_alloc_memory(int q, int ds, long nk){

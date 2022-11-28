@@ -253,6 +253,7 @@ for(int q = 0; q < nq; q++){
 	HN_[q] = new double*[ns];
 }
 
+#pragma omp parallel for
 for(int q = 0; q < nq; q++){
 	for (int ds = 0; ds < ns; ds++){
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
@@ -315,6 +316,13 @@ mel_ne_delete(N-1,dimen_p_); // Delete all elements saved in mel_ne_
 
 eigen_start(N);
 
+double E_c = E_hec();
+double e_ref = E_ref();
+		
+std::cout << "Inf corte " <<":" << '\t' << e_ref/D_N -  E_c << std::endl<< std::endl;
+std::cout << "Ref corte " <<":" << '\t' << e_ref/D_N << std::endl<< std::endl;
+std::cout << "Sup corte " <<":" << '\t' << e_ref/D_N +  E_c << std::endl<< std::endl;
+
 // Ok. The Hamiltonian is ready to diagonalization process. 
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
@@ -332,38 +340,63 @@ for (int q=0; q < nq; q++) {
 				Hamiltonian[k] = HN_[q][ds][k];
 			}
 			delete[] HN_[q][ds];						// Delete the HN in the sector (q,ds)
-			
-			if(N <= 4){
-				eigen_values[0] = 10*E_uv_;				// Cut-off diferent for N<=4
-			}
-			else{
-				eigen_values[0] = E_uv_;					// Cut-off Energy
-			}
+
+			//if((N <= 3)||(dim < 100)){
+				eigen_values[0] = 1000000*E_uv_/D_N;			// Cut-off diferent for N<=4
+			//}
+			//else{
+			//	eigen_values[0] = E_uv_;					// Absolute Cut-off Energy
+				//eigen_values[0] = E_uv_;					// Cut-off Energy
+			//}
 
 			int ret = givens(dim, 0 , Hamiltonian , eigen_values, eigen_vectors, 0);// Solve the hamiltonian
 			int dim_c = abs(ret);						// Dim bellow  the cut-off
-					
-
-			dimen_[q][ds] = dim_c;						// Save the Dim[q.ds]
-
-
+			
 			delete[] Hamiltonian;
 			Hamiltonian = NULL;						
+
+			long mark1 = 0;
+			long mark2 = 0;
+			long mark3 = 0;
+				
+			for(int k=0; k< dim;k++){
+				if(eigen_values[k] <= (E_uv_) ){
+					mark1 = k;
+				}
+				if( (double) ((e_ref/D_N) -E_c) >= eigen_values[k]){
+					mark2 = k;
+				}
+				if( (double) ((e_ref/D_N) + E_c) > eigen_values[k]){
+					mark3 = k;
+				}		
+			}
 			
+			if (mark2 <= (mark1)){mark2 = mark1;}
+				
+			if ((N<=5)){
+				mark1 = dim - 1; 
+				mark2 = 0;
+				mark3 = 0;
+			}
+
+			dim_c = (mark1 +1 + (mark3 - mark2));
+
+			dimen_[q][ds] = dim_c;						// Save the Dim[q.ds]
 			eigen_erg_alloc_memory(q,ds,(long) dim_c);				// Alloc memory to save E-Energies
 			eigen_vect_alloc_memory(q,ds,(long) dim_c*dim);			// Alloc memory to save E-Vectors
 
-			for (long k=0; k<dim_c; k++) {
+			for (long k=0; k<= mark1; k++) {
 				eigen_erg_write(q,ds,k,eigen_values[k]);
 				if (E_f > eigen_values[k]){
 					E_f = eigen_values[k];
 				}
 			}
 			
-			delete[] eigen_values;
-			eigen_values = NULL;
+			for (long k= mark2 +1; k <= mark3; k++) {
+				eigen_erg_write(q,ds,mark1 + k - mark2, eigen_values[k]);
+			}
 
-			for (int i=0; i< dim; i++) {						// Line 0, 1... dim_cut_off
+			for (int i=0; i<= mark1; i++) {						// Line 0, 1... dim_cut_off
 				int signal = 1;
 				if (eigen_vectors[i][0] < 0){
 					signal = -1;
@@ -374,10 +407,31 @@ for (int q=0; q < nq; q++) {
 					}
 				}
 				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
-					if ( i < dim_c){
-						eigen_vect_write(q,ds,(long) i*dim+j, (double) signal*eigen_vectors[i][j]); 
+					eigen_vect_write(q,ds,(long) i*dim+j, (double) signal*eigen_vectors[i][j]); 
+				}
+				
+			}
+
+			for (int i= mark2 + 1; i<= mark3 ; i++) {					// Line 0, 1... dim_cut_off
+				int signal = 1;
+				if (eigen_vectors[i][0] < 0){
+					signal = -1;
+				}
+				else{
+					if((eigen_vectors[i][0] == 0)&&(eigen_vectors[i][1]<0)){
+						signal = -1;						
 					}
 				}
+				for (int j=0; j<dim; j++) { 					// Collum 0, 1 ... dim
+					eigen_vect_write(q,ds,(long)(mark1+i-mark2)*dim+j, (double) signal*eigen_vectors[i][j]); 
+				}
+				
+			}
+	
+			delete[] eigen_values;
+			eigen_values = NULL;
+
+			for (int i=0; i< dim; i++) {
 				delete[] eigen_vectors[i];
 			}
 			delete[] eigen_vectors;
@@ -430,7 +484,7 @@ for (int q=0; q < nq; q++) {
 				//Saving the Energies 
 				for (long k=0; k<dim; k++) {
 					double Energy = eigen_erg_read(q,ds,k);        
-					file << std::setprecision(12) << Energy;
+					file << std::setprecision(18) << Energy;
 					file << std::endl;
 				}
   				//Closing the file
@@ -453,6 +507,7 @@ for (int q=0; q < nq; q++) {
 		}// end if dim>0
 	} //end for ds
 }//end for q
+
 
 /*
 // Printing the eigen energies non scaled by D_N
@@ -481,11 +536,15 @@ for (int q=0; q < 2; q++) {
 
 // */
 
+if(N == fN_max()){
+
+eigen_delete(N,dimen_);  // Delete all elements saved in eigen matrix
+
+}
 
 if (N < fN_max()){
 
 mel_start(N);
-
 
 for(int q=0;q<(nq-1);q++){
 	//|Q+1 dS+1 r2|(f_N^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS+1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS+1 p2|(f_N^+)|Q dS p1|
@@ -502,6 +561,7 @@ for(int q=0;q<(nq-1);q++){
 			int N23 = N22 + NN_[q+1][ds+1];	//
 			int N24 = N23 + NW_[q+1][ds+1];	// Sup Limit for g2 = 3 (Dim without the dim Cut-off) 
 			mel_ne_alloc_memory(q,ds,(long) dim*dim2);						// 
+			#pragma omp parallel for
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line
@@ -540,6 +600,7 @@ for(int q=0;q<(nq-1);q++){
 			int N23 = N22 + NN_[q+1][ds-1];	//
 			int N24 = N23 + NW_[q+1][ds-1];	// Sup Limit for g2 = 3 (Without the dim Cut-off) 
 			mel_nw_alloc_memory(q,ds,(long) dim*dim2);						// 
+			#pragma omp parallel for
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line

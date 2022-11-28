@@ -20,7 +20,7 @@ time_t beg_time = time(NULL);
 
 std::cout << "Starting the NRG code..." << std::endl;
 std::cout << std::endl;	
-std::cout << std::setprecision(8) << std::fixed;
+std::cout << std::setprecision(10) << std::fixed;
 
 read_all_params();    								// Read the parameters to start the code.
 double W1 = W_1();								// What is the value of W ? 

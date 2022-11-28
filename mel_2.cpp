@@ -1,4 +1,4 @@
-#include "mel.h"
+#include "mel_2.h"
 // This function will salve somes bigs matrixs for the NRG code. 
 // 
 
@@ -134,28 +134,37 @@ for(int q = 0; q < nq; q++){
 
 
 void eigen2_delete(int N, int **dimen){
-
 int nq = 2*(N+2)+1; 								
 int ns = (N+2) +1;									
+for(int q = 0; q < nq; q++){
+	for(int ds=0; ds < ns; ds++){
+		int dim  = dimen[q][ds];
+		if (dim>0){
+			delete[] eigen_erg_[q][ds];
+		}
+	}
+	delete[] eigen_erg_[q];
+}
+delete[] eigen_erg_;
+eigen_erg_  = NULL;
+}
 
+void eigen2_vect_delete(int N, int **dimen){
+int nq = 2*(N+2)+1; 								
+int ns = (N+2) +1;									
 for(int q = 0; q < nq; q++){
 	for(int ds=0; ds < ns; ds++){
 		int dim  = dimen[q][ds];
 		if (dim>0){
 			delete[] eigen_vect_[q][ds];
-			delete[] eigen_erg_[q][ds];
 		}
 	}
 	delete[] eigen_vect_[q];
-	delete[] eigen_erg_[q];
 }
-
 delete[] eigen_vect_;
-delete[] eigen_erg_;
-
 eigen_vect_ = NULL;
-eigen_erg_  = NULL;
 }
+
 
 void eigen2_erg_alloc_memory(int q, int ds, long nk){
 

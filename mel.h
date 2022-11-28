@@ -18,6 +18,7 @@ void mel_nw_delete(int N, int **dimen);
 // EIGEN Functions. 
 void eigen_start(int N);
 void eigen_delete(int N, int **dimen);
+void eigen_vect_delete(int N, int **dimen);
 void eigen_erg_alloc_memory(int q, int ds, long nk);
 void eigen_vect_alloc_memory(int q, int ds, long nk);
 void eigen_erg_write(int q, int ds, long k, double value);

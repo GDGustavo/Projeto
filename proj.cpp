@@ -19,10 +19,6 @@ void projection_alloc_memory(int q, int ds, long nk){
 
 projection_[q][ds] = new double[nk];							
 
-for(long k=0; k< nk; k++){								
-	projection_[q][ds][k] = 0;
-} 
-
 }
 
 // Functions to write and read in the matrix. 

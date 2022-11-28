@@ -177,6 +177,7 @@ for(int q = 0; q < nq; q++){
 	HN_[q] = new double*[ns];
 }
 
+#pragma omp parallel for
 for(int q = 0; q < nq; q++){
 	for (int ds = 0; ds < ns; ds++){
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
@@ -239,7 +240,7 @@ mel2_ne_delete(N-1,dimen_p_); // Delete all elements saved in mel_ne_
 
 eigen2_start(N);
 
-// Ok. The Hamiltonian is ready to diagonalization process. 
+// Ok. The Hamiltonian is ready to diagonalization process.
 for (int q=0; q < nq; q++) {
 	for (int ds=0; ds < ns; ds++) {
 		int dim = NS_[q][ds] + NE_[q][ds] + NN_[q][ds] + NW_[q][ds];
@@ -357,11 +358,15 @@ for (int q=0; q < nq; q++) {
 	} //end for ds
 }//end for q
 
+if(N == fN_max()){
+
+eigen2_delete(N,dimen_);  // Delete all elements saved in eigen matrix
+
+}
 
 if(N < fN_max()){
 
 mel2_start(N);
-
 
 for(int q=0;q<(nq-1);q++){
 	//|Q+1 dS+1 r2|(f_N^+)|Q dS r1| = sum_{p2,p1} U*(Q+1;dS+1)[r2,p2]U(Q;S)[r1,p1]*|Q+1 dS+1 p2|(f_N^+)|Q dS p1|
@@ -377,7 +382,8 @@ for(int q=0;q<(nq-1);q++){
 			int N22 = N21 + NE_[q+1][ds+1];	//
 			int N23 = N22 + NN_[q+1][ds+1];	//
 			int N24 = N23 + NW_[q+1][ds+1];	//
-			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);					// 
+			mel2_ne_alloc_memory(q,ds,(long) dim*dim2);					//
+			#pragma omp parallel for
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line
@@ -416,6 +422,7 @@ for(int q=0;q<(nq-1);q++){
 			int N23 = N22 + NN_[q+1][ds-1];	//
 			int N24 = N23 + NW_[q+1][ds-1];	//
 			mel2_nw_alloc_memory(q,ds,(long) dim*dim2);					// 
+			#pragma omp parallel for
 			for(long k=0;k<dim*dim2;k++){
 				double sum = 0;
 				int r2 = k/dim;      						// line
@@ -444,78 +451,169 @@ for(int q=0;q<(nq-1);q++){
 
 } // end if N < N_max
 
-// Projetcions Beteween the "Right" and "Left" sectors. 
+// The importants sectors for the projections are such that the values are between : 
+int q_0 = 1;
+if( fN_max()%2 == 0){
+q_0 = 0;
+}
+int ds_0 = 0;
 
-save_projection(N-1, dimen_p_);         // Save the past projection matrix 
+int soma_max = q_0 + ds_0 + (fN_max() - N); 
+int soma_min = q_0 + ds_0 - (fN_max() - N);
+int q_max = q_0 + (fN_max() - N); 
+int q_min = q_0 - (fN_max() - N); 
+int ds_max = ds_0 + (fN_max() - N);
+int ds_min = ds_0 - (fN_max() - N);
+
+// Projetcions Beteween the "Right" and "Left" sectors.
+
+
+// Save the eigenvector in matrix here to acess more fast
+double*** vect_L_ = new double**[nq];								
+double*** vect_R_ = new double**[nq];
+for(int q = 0; q < nq; q++){					
+	vect_L_[q] = new double*[ns];
+	vect_R_[q] = new double*[ns];
+	for (int ds = 0; ds < ns; ds++){
+		int dim = dimen_[q][ds];
+		int dim2= NS_[q][ds]+NE_[q][ds]+NN_[q][ds]+NW_[q][ds];		
+		if (dim > 0){
+			vect_L_[q][ds] = new double[(long) dim*dim2];
+			vect_R_[q][ds] = new double[(long) dim*dim2];
+			for(long k = 0; k < (long) dim*dim2; k++){
+				vect_L_[q][ds][k] = eigen_vect_read(q,ds,k);
+				vect_R_[q][ds][k] = eigen2_vect_read(q,ds,k);
+			}
+		}	
+	}
+}		
+eigen_vect_delete(N,dimen_); // Delete all elements saved in eigen matrix
+eigen2_vect_delete(N,dimen_); // Delete all elements saved in eigen matrix
+
+ // Save the past projection matrix 
+double*** projection_past_ = new double**[nq-2];								
+for(int q = 0; q < nq-2; q++){					
+	projection_past_[q] = new double*[ns-1];
+	for (int ds = 0; ds < ns-1; ds++){
+		int dim = dimen_p_[q][ds];		
+		if (dim > 0){
+			projection_past_[q][ds] = new double[(long) dim*dim];
+			//#pragma omp parallel for
+			for(long k = 0; k < (long) dim*dim; k++){
+				projection_past_[q][ds][k] = projection_read(q,ds,k);
+			}
+		}	
+	}
+}		
 projection_delete(N-1, dimen_p_);       // Delete the projection matrix from the iteraction N-1
 projection_start(N);                    // Starting the adress in the sector (q, ds) to save the matrix projection
 
+#pragma omp parallel for
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
 		int dim = dimen_[q][ds];
-		if((N==fN_max())&&(abs(q-N-2) + ds > 1)){// For the last N we could only calculate in the ground state charge-spim 
+		if((N==fN_max())&&(((q-N-2)!=(q_0))||(ds != ds_0))){// we could only calculate in the ground state charge-spim 
 			dim = 0;
 		}
-		if((N==fN_max())&&(ds>0)&&(q-N-2<0)){
-			dim = 0;
+		int selec = 1;
+		int charge = q - N - 2; 
+		int soma = charge + ds; 
+		if((soma <= soma_max)&&(soma >= soma_min)){
+			if((charge <= q_max)&&(charge >= q_min)){
+				if((ds <= ds_max)&&(ds >= ds_min)){
+					selec = 0;
+				}
+			}
 		}
 		if(dim> 0){
-			projection_alloc_memory(q,ds, (long) dim*dim);
 			int N1 = NS_[q][ds];							// Sup limit for g1 = 0
 			int N2 = N1 + NE_[q][ds]; 							// Sup limit for g1 = 1
 			int N3 = N2 + NN_[q][ds];							// Sup Limit for g1 = 2
 			int N4 = N3 + NW_[q][ds];							// Sup Limit for g1 = 3
-			for(long k = 0; k < dim*dim; k++){
-				double sum = 0;
-				int r_L = k/dim;							// Line
-				int r_R = k - r_L*dim;						// Colum
+			if (selec == 0){
+				std::cout << "Starting Proj. ["<< (q - N - 2) << ";" << ds;
+				std::cout << "] Sector, " <<"dim =="<< dim << std::endl;
+				projection_alloc_memory(q,ds, (long) dim*dim);
+				#pragma omp parallel for
+				for(long k = 0; k < dim*dim; k++){
+					double sum = 0;
+					int r_L = k/dim;							// Line
+					int r_R = k - r_L*dim;						// Colum
+					#pragma omp parallel for
 					for(int p_L = 0; p_L < N1 ; p_L ++){				// g1 = 0 
 						for(int p_R = 0; p_R < N1; p_R ++){				// g2 = 0
 							int dm_L= dimen_p_[q][ds];
-							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-							double aux_3 = save_projection_read(q,ds,(long)(p_L)*dm_L +p_R); 
-							sum = sum + aux_1*aux_2*aux_3;
+							//#pragma omp atomic
+								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q][ds][(long)(p_L)*dm_L +p_R];
 						}
 					}
+					#pragma omp parallel for
 					for(int p_L = N1; p_L < N2; p_L ++){				// g1 = 1
 						for(int p_R = N1; p_R < N2; p_R ++){			// g2 = 1
 							int dm_L= dimen_p_[q-1][ds-1];
-							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-							double aux_3 = save_projection_read(q-1,ds-1,(long)(p_L-N1)*dm_L+p_R-N1); 
-							sum = sum + aux_1*aux_2*aux_3;
+							//#pragma omp atomic
+								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds-1][(long)(p_L-N1)*dm_L+p_R-N1]; 
 						}
 					}
+					#pragma omp parallel for
 					for(int p_L = N2; p_L < N3; p_L ++){				// g1 = 2
 						for(int p_R = N2; p_R < N3; p_R ++){			// g2 = 2
 							int dm_L= dimen_p_[q-2][ds];
-							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-							double aux_3 = save_projection_read(q-2,ds,(long) (p_L-N2)*dm_L +p_R-N2); 
-							sum = sum + aux_1*aux_2*aux_3;
+							//#pragma omp atomic
+								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-2][ds][(long) (p_L-N2)*dm_L +p_R-N2];
 						}
 					}
+					#pragma omp parallel for
 					for(int p_L = N3; p_L < N4; p_L ++){				// g1 = 3
 						for(int p_R = N3; p_R < N4; p_R ++){			// g2 = 3
 							int dm_L= dimen_p_[q-1][ds+1];
-							double aux_1 = eigen_vect_read(q,ds, (long) r_L*N4 +p_L);
-							double aux_2 = eigen2_vect_read(q,ds,(long) r_R*N4 +p_R);
-							double aux_3 = save_projection_read(q-1,ds+1,(long)(p_L-N3)*dm_L +p_R-N3); 
-							sum = sum + aux_1*aux_2*aux_3;
+							//#pragma omp atomic
+								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds+1][(long)(p_L-N3)*dm_L +p_R-N3]; 
 						}
 					}
-				projection_write(q,ds,k,sum);
-			} // end for k
+				//matrix_to_save[k] = sum;
+					projection_write(q,ds,k,sum);
+				} // end for k
+			} // end if selec == 0
+			else{
+				projection_alloc_memory(q,ds, (long) 1);
+			} 
 		} // end if dim > 0
 	} // end for ds
 } // end for q
 
-save_projection_delete(N-1, dimen_p_);  // Delete the saved matrix
+// Delete the past projection matrix
+for(int q = 0; q < nq-2; q++){
+	for(int ds=0; ds < ns-1; ds++){
+		int dim  = dimen_p_[q][ds];
+		if (dim>0){
+			delete[] projection_past_[q][ds];
+		}
+	}
+	delete[] projection_past_[q];
+}
+delete[] projection_past_;
+projection_past_ = NULL;
+
+// Delete the eigenvalues matrix
+for(int q = 0; q < nq; q++){
+	for(int ds=0; ds < ns; ds++){
+		int dim  = dimen_[q][ds];
+		if (dim>0){
+			delete[] vect_R_[q][ds];
+			delete[] vect_L_[q][ds];
+		}
+	}
+	delete[] vect_R_[q];
+	delete[] vect_L_[q];
+}
+delete[] vect_R_;
+delete[] vect_L_;
+vect_R_ = NULL;
+vect_L_ = NULL;
 
 // Printing the projections in the last iteraction
 if (N == fN_max()){
-std::cout <<"Basis Projetcions Beteween the Right and Left sectors. for N = " << N <<";" << std::endl << std::endl;
 
 std::ofstream file3;
 file3.open("Projections.txt");
@@ -527,13 +625,13 @@ for(int q=0; q<nq; q++){
 		double proj_max = 0;
 		int r_R_p_max = 0;
 		if((dim> 0)&&(abs(q-N-2) + ds <= 1)&&(ds==0)&&(q-N-2>=0)){
-			for(int r_L = 0; r_L < 0*dim+1; r_L++){						// Line /left side
-				for(int r_R = 0; r_R < dim; r_R++){					// Colum/ Right side
+			for(int r_R = 0; r_R < 0*dim+1; r_R++){						// Line /left side
+				for(int r_L = 0; r_L < dim; r_L++){					// Colum/ Right side
 					long k = r_L*dim + r_R;						
 					double sum = projection_read(q,ds,k);
 					std::cout <<"Proj["<<q-N-2<<";"<< ds<<"]("<<r_L + 1 << ";" <<r_R + 1 << ") = "; 
 					std::cout << sum << "; ";
-					file3 << std::setprecision(12) << sum;
+					file3 << std::setprecision(16) << sum;
 					file3 << std::endl;						  
 					  proj2 = proj2 + sum*sum;
 					  if(abs(sum)>proj_max){ 

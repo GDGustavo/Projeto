@@ -1,7 +1,7 @@
 #include "param.h"
 
 static double Lamb_ = 0.0; // Discretization parameter Lambda, to be read from file "param.txt"
-static double Gamma_ = 0.0; // 
+static double E_hec_ = 0.0; // 
 static double z_m_ = 0.0; // 
 static double U_ = 0.0; // 
 static int N_max_ = 0; // 
@@ -10,7 +10,7 @@ static double E_uv_ = 0.0; //
 static double W_1_ = 0.0; // 
 static double W_2_ = 0.0; // 
 static double V_0_ = 0.0; //
-static double D_ = 0.0; //  
+static double E_ref_ = 0.0; //  
 
 double  read_param(std::string var){
 
@@ -152,6 +152,12 @@ std::cout << "z_m=" << '\t' << z_m_ << std::endl;
 E_uv_ = read_param("E_uv");
 std::cout << "E_uv=" << '\t' << E_uv_ << std::endl;
 
+E_hec_ = read_param("E_hec");
+std::cout << "E_hec=" << '\t' << E_hec_ << std::endl;
+
+E_ref_ = read_param("E_ref");
+std::cout << "E_ref=" << '\t' << E_ref_ << std::endl;
+
 std::cout << "Done! All parameters have already been read!" << std::endl;
 
 }
@@ -165,24 +171,17 @@ double lamb()
       return Lamb_;
 }
 
-//Gamma
-double Gamma()
+//E_ref
+double E_ref()
 {
-      return Gamma_;
+      return E_ref_;
 }
 
-double update_Gamma(double new_value)
+double update_Eref(double new_value)
 {
-     Gamma_ = new_value;
-     return Gamma_;
+     E_ref_ = new_value;
+     return E_ref_;
 }
-
-//D_b
-double D(){
-
-	return D_;
-}
-
 
 //U
 double U()
@@ -222,11 +221,22 @@ double V_0()
       return V_0_;
 }
 
+double update_V(double new_value)
+{
+     V_0_ = new_value;
+     return V_0_;
+}
 
 //E_uv
 double E_uv()
 {
       return E_uv_;
+}
+
+//E_hec
+double E_hec()
+{
+	return E_hec_;
 }
 
 // W_2
