@@ -237,6 +237,8 @@ double aux =(1-pow(lamb_,(float) -N-2))/sqrt((1-pow(lamb_,(float) -2*(N-1)-1))*(
 double D_N = (1-pow(lamb_, (float) -1))*(pow(lamb_, (float) -(N-1)/2))/log(lamb_);		// D_N
 double t_N = aux; 									// Calculating the coupling t_(N-1).
 double E_f = 1e20;									// Fundamental Energy
+double E_c = (double) E_hec();
+double e_ref = (double) E_ref();
 
 //std::cout << "D_" << N << "=     "<< '\t' << D_N <<std::endl;
 //std::cout << "t_"<<N-1<<"/D_"<<N<<"=    " << '\t' << t_N <<std::endl;
@@ -316,8 +318,6 @@ mel_ne_delete(N-1,dimen_p_); // Delete all elements saved in mel_ne_
 
 eigen_start(N);
 
-double E_c = E_hec();
-double e_ref = E_ref();
 		
 std::cout << "Inf corte " <<":" << '\t' << e_ref/D_N -  E_c << std::endl<< std::endl;
 std::cout << "Ref corte " <<":" << '\t' << e_ref/D_N << std::endl<< std::endl;
@@ -373,7 +373,7 @@ for (int q=0; q < nq; q++) {
 			
 			if (mark2 <= (mark1)){mark2 = mark1;}
 				
-			if ((N<=5)){
+			if (N<=fN_c()){
 				mark1 = dim - 1; 
 				mark2 = 0;
 				mark3 = 0;

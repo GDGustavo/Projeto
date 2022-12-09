@@ -18,6 +18,7 @@ double U();
 double z_m();
 double update_z_m(double new_value);
 int fN_max();
+int fN_c();
 int update_N_max(int new_value);
 double E_d();
 double V_0();

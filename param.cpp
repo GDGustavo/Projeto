@@ -4,7 +4,8 @@ static double Lamb_ = 0.0; // Discretization parameter Lambda, to be read from f
 static double E_hec_ = 0.0; // 
 static double z_m_ = 0.0; // 
 static double U_ = 0.0; // 
-static int N_max_ = 0; // 
+static int N_max_ = 0; //
+static int N_c_ = 0; 
 static double E_d_ = 0.0; // 
 static double E_uv_ = 0.0; //  
 static double W_1_ = 0.0; // 
@@ -130,6 +131,9 @@ std::cout << "Lambda = "<< Lamb_ << std::endl;
 N_max_ = (int) static_cast<int>(read_param("N_max"));
 std::cout << "N_max="<< '\t' << N_max_ << std::endl;
 
+N_c_ = (int) static_cast<int>(read_param("N_c"));
+std::cout << "N_c="<< '\t' << N_c_ << std::endl;
+
 E_d_ = read_param("E_d");
 std::cout << "E_d=" << '\t'<< E_d_ << std::endl;
 
@@ -144,7 +148,6 @@ std::cout << "W_1="<<  '\t' << W_1_ << std::endl;
 
 W_2_ = read_param("W_2");
 std::cout << "W_2="<< '\t' << W_2_ << std::endl;
-
 
 z_m_ = read_param("z_m");
 std::cout << "z_m=" << '\t' << z_m_ << std::endl;
@@ -206,6 +209,12 @@ int fN_max()
 {
 	N_max_ = (int) static_cast<int>(read_param("N_max"));
 	return N_max_;
+}
+
+int fN_c()
+{
+	N_c_ = (int) static_cast<int>(read_param("N_c"));
+	return N_c_;
 }
 
 //E_d

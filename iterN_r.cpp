@@ -508,7 +508,6 @@ for(int q = 0; q < nq-2; q++){
 projection_delete(N-1, dimen_p_);       // Delete the projection matrix from the iteraction N-1
 projection_start(N);                    // Starting the adress in the sector (q, ds) to save the matrix projection
 
-#pragma omp parallel for
 for(int q=0; q<nq; q++){
 	for(int ds = 0; ds < ns; ds++){
 		int dim = dimen_[q][ds];
@@ -542,33 +541,25 @@ for(int q=0; q<nq; q++){
 					#pragma omp parallel for
 					for(int p_L = 0; p_L < N1 ; p_L ++){				// g1 = 0 
 						for(int p_R = 0; p_R < N1; p_R ++){				// g2 = 0
-							int dm_L= dimen_p_[q][ds];
-							//#pragma omp atomic
-								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q][ds][(long)(p_L)*dm_L +p_R];
+							sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q][ds][(long)(p_L)*dimen_p_[q][ds] +p_R];
 						}
 					}
 					#pragma omp parallel for
 					for(int p_L = N1; p_L < N2; p_L ++){				// g1 = 1
 						for(int p_R = N1; p_R < N2; p_R ++){			// g2 = 1
-							int dm_L= dimen_p_[q-1][ds-1];
-							//#pragma omp atomic
-								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds-1][(long)(p_L-N1)*dm_L+p_R-N1]; 
+							sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds-1][(long)(p_L-N1)*dimen_p_[q-1][ds-1]+p_R-N1]; 
 						}
 					}
 					#pragma omp parallel for
 					for(int p_L = N2; p_L < N3; p_L ++){				// g1 = 2
 						for(int p_R = N2; p_R < N3; p_R ++){			// g2 = 2
-							int dm_L= dimen_p_[q-2][ds];
-							//#pragma omp atomic
-								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-2][ds][(long) (p_L-N2)*dm_L +p_R-N2];
+							sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-2][ds][(long) (p_L-N2)*dimen_p_[q-2][ds] +p_R-N2];
 						}
 					}
 					#pragma omp parallel for
 					for(int p_L = N3; p_L < N4; p_L ++){				// g1 = 3
 						for(int p_R = N3; p_R < N4; p_R ++){			// g2 = 3
-							int dm_L= dimen_p_[q-1][ds+1];
-							//#pragma omp atomic
-								sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds+1][(long)(p_L-N3)*dm_L +p_R-N3]; 
+							sum += vect_L_[q][ds][(long)r_L*N4 +p_L]*vect_R_[q][ds][(long) r_R*N4 +p_R]*projection_past_[q-1][ds+1][(long)(p_L-N3)*dimen_p_[q-1][ds+1]+p_R-N3]; 
 						}
 					}
 				//matrix_to_save[k] = sum;
@@ -636,12 +627,12 @@ for(int q=0; q<nq; q++){
 					  proj2 = proj2 + sum*sum;
 					  if(abs(sum)>proj_max){ 
 						proj_max = abs(sum);
-						r_R_p_max = r_R; 
+						r_R_p_max = r_L; 
 					  }
 				}
-				file3 << std::endl<< std::endl;
+				file3 << std::endl;
 			} // end for k
-		 	std::cout << std::endl<< std::endl;
+		 	std::cout << std::endl;
 			std::cout <<"sum_n of Proj(0,n)²   = " << proj2 << std::endl;
 			std::cout <<"Maximum value of Proj = " << proj_max << "; r =" << (r_R_p_max +1);
 			std::cout << std::endl<< std::endl;
